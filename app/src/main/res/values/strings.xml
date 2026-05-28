@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">CampusGO</string>
+    <string name="app_tagline">Your Campus, Your Gig</string>
+
+    <!-- Login -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="sign_in_subtitle">Sign in to your CampusGO account</string>
+    <string name="hint_email">Email address</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_sign_in">Sign In</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="sign_up">Sign Up</string>
+
+    <!-- Register -->
+    <string name="create_account">Create Account</string>
+    <string name="register_subtitle">Join CampusGO today</string>
+    <string name="hint_full_name">Full name</string>
+    <string name="hint_confirm_password">Confirm password</string>
+    <string name="btn_create_account">Create Account</string>
+    <string name="i_am_a">I am a:</string>
+    <string name="role_student">Student</string>
+    <string name="role_provider">Service Provider</string>
+    <string name="have_account">Already have an account?</string>
+    <string name="sign_in">Sign In</string>
+
+    <!-- Home -->
+    <string name="welcome_user">Welcome, %1$s!</string>
+    <string name="home_subtitle">What would you like to do today?</string>
+    <string name="btn_logout">Sign Out</string>
+    <string name="browse_gigs">Browse Tasks</string>
+    <string name="browse_gigs_desc">Find tasks to run and earn on campus</string>
+    <string name="post_gig">Post a Task</string>
+    <string name="post_gig_desc">Need something done? Post it for a runner</string>
+</resources>

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/campusgo_background">
+
+    <!-- Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp"
+        android:gravity="center_vertical"
+        android:background="@color/campusgo_background">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:id="@+id/tvTaskNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@color/campusgo_text_primary" />
+
+        <View android:layout_width="48dp" android:layout_height="48dp" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/campusgo_divider" />
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Final price + status -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FINAL PRICE" android:textSize="10sp" android:textStyle="bold" android:letterSpacing="0.08" android:textColor="@color/campusgo_text_secondary" />
+                    <TextView android:id="@+id/tvFinalPrice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="26sp" android:textStyle="bold" android:textColor="@color/campusgo_text_primary" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/campusgo_text_primary"
+                    android:background="@drawable/bg_tag" />
+            </LinearLayout>
+
+            <!-- Timeline card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/campusgo_background"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/campusgo_divider"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout android:id="@+id/stepPosted" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <LinearLayout android:layout_width="24dp" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center_horizontal">
+                            <TextView android:id="@+id/dotPosted" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_avatar" android:gravity="center" android:textSize="12sp" android:textColor="@color/campusgo_text_secondary" />
+                            <View android:id="@+id/linePosted" android:layout_width="2dp" android:layout_height="28dp" android:background="@color/campusgo_divider" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp" android:paddingBottom="4dp">
+                            <TextView android:id="@+id/titlePosted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Posted" android:textSize="14sp" android:textColor="@color/campusgo_text_secondary" />
+                            <TextView android:id="@+id/timePosted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/campusgo_text_hint" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout android:id="@+id/stepAccepted" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <LinearLayout android:layout_width="24dp" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center_horizontal">
+                            <TextView android:id="@+id/dotAccepted" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_avatar" android:gravity="center" android:textSize="12sp" android:textColor="@color/campusgo_text_secondary" />
+                            <View android:id="@+id/lineAccepted" android:layout_width="2dp" android:layout_height="28dp" android:background="@color/campusgo_divider" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp" android:paddingBottom="4dp">
+                            <TextView android:id="@+id/titleAccepted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Accepted" android:textSize="14sp" android:textColor="@color/campusgo_text_secondary" />
+                            <TextView android:id="@+id/timeAccepted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/campusgo_text_hint" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout android:id="@+id/stepOnTheWay" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <LinearLayout android:layout_width="24dp" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center_horizontal">
+                            <TextView android:id="@+id/dotOnTheWay" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_avatar" android:gravity="center" android:textSize="12sp" android:textColor="@color/campusgo_text_secondary" />
+                            <View android:id="@+id/lineOnTheWay" android:layout_width="2dp" android:layout_height="28dp" android:background="@color/campusgo_divider" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp" android:paddingBottom="4dp">
+                            <TextView android:id="@+id/titleOnTheWay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="On the way" android:textSize="14sp" android:textColor="@color/campusgo_text_secondary" />
+                            <TextView android:id="@+id/timeOnTheWay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/campusgo_text_hint" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout android:id="@+id/stepDelivered" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <LinearLayout android:layout_width="24dp" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center_horizontal">
+                            <TextView android:id="@+id/dotDelivered" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_avatar" android:gravity="center" android:textSize="12sp" android:textColor="@color/campusgo_text_secondary" />
+                            <View android:id="@+id/lineDelivered" android:layout_width="2dp" android:layout_height="28dp" android:background="@color/campusgo_divider" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp" android:paddingBottom="4dp">
+                            <TextView android:id="@+id/titleDelivered" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Delivered" android:textSize="14sp" android:textColor="@color/campusgo_text_secondary" />
+                            <TextView android:id="@+id/timeDelivered" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/campusgo_text_hint" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout android:id="@+id/stepCompleted" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <LinearLayout android:layout_width="24dp" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center_horizontal">
+                            <TextView android:id="@+id/dotCompleted" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_avatar" android:gravity="center" android:textSize="12sp" android:textColor="@color/campusgo_text_secondary" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp">
+                            <TextView android:id="@+id/titleCompleted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Both confirmed" android:textSize="14sp" android:textColor="@color/campusgo_text_secondary" />
+                            <TextView android:id="@+id/timeCompleted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/campusgo_text_hint" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Participants card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/campusgo_background"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/campusgo_divider"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PARTICIPANTS"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:textColor="@color/campusgo_text_secondary"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Poster -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp">
+                        <TextView android:id="@+id/tvPosterAvatar" android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_avatar" android:gravity="center" android:textSize="14sp" android:textStyle="bold" android:textColor="@color/campusgo_text_secondary" />
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="10dp">
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                                <TextView android:id="@+id/tvPosterName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" android:textStyle="bold" android:textColor="@color/campusgo_text_primary" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:text="POSTER" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/campusgo_text_secondary" />
+                            </LinearLayout>
+                            <TextView android:id="@+id/tvPosterRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/campusgo_text_secondary" />
+                        </LinearLayout>
+                        <ImageButton android:id="@+id/btnChatPoster" android:layout_width="36dp" android:layout_height="36dp" android:background="@drawable/bg_avatar" android:src="@drawable/ic_chat" android:contentDescription="Chat" android:padding="8dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/campusgo_divider" android:layout_marginBottom="12dp" />
+
+                    <!-- Runner -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                        <TextView android:id="@+id/tvRunnerAvatar" android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_avatar" android:gravity="center" android:textSize="14sp" android:textStyle="bold" android:textColor="@color/campusgo_text_secondary" />
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="10dp">
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                                <TextView android:id="@+id/tvRunnerName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp" android:textStyle="bold" android:textColor="@color/campusgo_text_primary" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:text="RUNNER" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/campusgo_text_secondary" />
+                            </LinearLayout>
+                            <TextView android:id="@+id/tvRunnerRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/campusgo_text_secondary" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Report button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReport"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Report an issue"
+                android:textSize="13sp"
+                android:textColor="@color/campusgo_error" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom action bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/campusgo_background">
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/campusgo_divider" android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:id="@+id/llRunnerActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="Cancel"
+                android:textSize="15sp"
+                app:strokeColor="@color/campusgo_error"
+                android:textColor="@color/campusgo_error"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAction"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:text="Mark Delivered"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/campusgo_text_primary"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPosterConfirm"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Confirm Received"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:backgroundTint="@color/campusgo_success"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,23 @@
+<resources>
+    <!-- Force light/white theme even in dark mode -->
+    <style name="Theme.CampusGO" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/campusgo_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/campusgo_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/campusgo_primary_dark</item>
+        <item name="colorSecondary">@color/campusgo_secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSurface">@color/campusgo_background</item>
+        <item name="colorOnSurface">@color/campusgo_text_primary</item>
+        <item name="colorSurfaceVariant">@color/campusgo_surface_variant</item>
+        <item name="colorError">@color/campusgo_error</item>
+        <item name="android:colorBackground">@color/campusgo_background</item>
+        <item name="android:windowBackground">@color/campusgo_background</item>
+        <item name="android:statusBarColor">@color/campusgo_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/campusgo_background</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <style name="Theme.CampusGO.Splash" parent="Theme.CampusGO" />
+</resources>

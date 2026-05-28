@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- CampusGO Brand -->
+    <color name="campusgo_primary">#4F46E5</color>
+    <color name="campusgo_primary_dark">#3730A3</color>
+    <color name="campusgo_primary_light">#EEF2FF</color>
+    <color name="campusgo_primary_container">#C7D2FE</color>
+    <color name="campusgo_secondary">#F97316</color>
+    <color name="campusgo_secondary_light">#FFF7ED</color>
+
+    <!-- Surfaces -->
+    <color name="campusgo_background">#FFFFFF</color>
+    <color name="campusgo_surface">#F8FAFC</color>
+    <color name="campusgo_surface_variant">#F1F5F9</color>
+
+    <!-- Text -->
+    <color name="campusgo_text_primary">#0F172A</color>
+    <color name="campusgo_text_secondary">#64748B</color>
+    <color name="campusgo_text_hint">#94A3B8</color>
+
+    <!-- Status -->
+    <color name="campusgo_error">#EF4444</color>
+    <color name="campusgo_success">#22C55E</color>
+    <color name="campusgo_divider">#E2E8F0</color>
+
+    <!-- Bottom nav state list -->
+    <color name="bottom_nav_selected">#0F172A</color>
+    <color name="bottom_nav_unselected">#94A3B8</color>
+</resources>
