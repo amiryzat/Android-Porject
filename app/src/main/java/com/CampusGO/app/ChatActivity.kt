@@ -3,6 +3,7 @@ package com.CampusGO.app
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
@@ -70,11 +71,66 @@ class ChatActivity : AppCompatActivity() {
     private fun loadTask() {
         db.child("tasks").child(taskId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                currentTask = snapshot.getValue(Task::class.java)
+                val task = snapshot.getValue(Task::class.java) ?: run {
+                    Log.w("ChatActivity", "Task $taskId not found")
+                    return
+                }
+                currentTask = task
                 updateToolbar()
+                ensureChatExists(task)
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatActivity", "loadTask cancelled: ${error.message}")
+            }
         })
+    }
+
+    // Guarantees /chats/{chatId} has all required fields so ChatListFragment can filter
+    // by posterId/runnerId. Only the runner creates the document — the poster only opens
+    // chats that already exist (from ChatListFragment / TaskTracking).
+    private fun ensureChatExists(task: Task) {
+        val uid = auth.currentUser?.uid ?: return
+        val myName = auth.currentUser?.displayName?.takeIf { it.isNotBlank() } ?: "Runner"
+
+        Log.d("ChatActivity", "ensureChatExists: uid=$uid posterId=${task.posterId} chatId=$chatId")
+
+        if (task.posterId == uid) {
+            Log.d("ChatActivity", "ensureChatExists: current user is poster — doc should already exist")
+            return
+        }
+
+        // Current user is the runner — runnerId = uid, posterId = task.posterId
+        db.child("chats").child(chatId).get()
+            .addOnSuccessListener { snap ->
+                if (!snap.exists()) {
+                    Log.d("ChatActivity", "Creating /chats/$chatId  posterId=${task.posterId}  runnerId=$uid")
+                    val chatData = mapOf(
+                        "id"              to chatId,
+                        "taskId"          to task.id,
+                        "taskTitle"       to task.title,
+                        "taskNumber"      to task.taskNumber,
+                        "posterId"        to task.posterId,
+                        "posterName"      to task.posterName,
+                        "runnerId"        to uid,
+                        "runnerName"      to myName,
+                        "lastMessage"     to "",
+                        "lastMessageTime" to 0L,
+                        "finalPrice"      to 0.0
+                    )
+                    db.child("chats").child(chatId).setValue(chatData)
+                        .addOnSuccessListener {
+                            Log.d("ChatActivity", "/chats/$chatId created successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("ChatActivity", "Failed to create /chats/$chatId: ${e.message}")
+                        }
+                } else {
+                    Log.d("ChatActivity", "/chats/$chatId already exists — no-op")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatActivity", "Failed to read /chats/$chatId: ${e.message}")
+            }
     }
 
     private fun loadChat() {
@@ -127,6 +183,7 @@ class ChatActivity : AppCompatActivity() {
         val uid = auth.currentUser?.uid ?: return
         val senderName = auth.currentUser?.displayName ?: "Unknown"
 
+        Log.d("ChatActivity", "sendTextMessage: uid=$uid chatId=$chatId content=$content")
         val msgRef = db.child("messages").child(chatId).push()
         val msgId = msgRef.key ?: return
         val msg = Message(
@@ -172,6 +229,7 @@ class ChatActivity : AppCompatActivity() {
         val uid = auth.currentUser?.uid ?: return
         val senderName = auth.currentUser?.displayName ?: "Unknown"
 
+        Log.d("ChatActivity", "sendPriceOffer: uid=$uid chatId=$chatId price=$offerPrice")
         val msgRef = db.child("messages").child(chatId).push()
         val msgId = msgRef.key ?: return
         val msg = Message(

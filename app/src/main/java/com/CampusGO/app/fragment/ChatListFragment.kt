@@ -59,14 +59,16 @@ class ChatListFragment : Fragment() {
         listener = db.child("chats").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!isAdded) return
+                Log.d("ChatListFragment", "onDataChange: uid=$uid total=${snapshot.childrenCount} chats in DB")
                 val chats = mutableListOf<Chat>()
                 for (child in snapshot.children) {
                     val chat = child.getValue(Chat::class.java) ?: continue
-                    if (chat.posterId == uid || chat.runnerId == uid) {
-                        chats.add(chat)
-                    }
+                    val matches = chat.posterId == uid || chat.runnerId == uid
+                    Log.d("ChatListFragment", "  chat=${chat.id} posterId=${chat.posterId} runnerId=${chat.runnerId} matches=$matches")
+                    if (matches) chats.add(chat)
                 }
                 chats.sortByDescending { it.lastMessageTime }
+                Log.d("ChatListFragment", "Displaying ${chats.size} chats for uid=$uid")
                 adapter.updateChats(chats)
                 tvEmpty.visibility = if (chats.isEmpty()) View.VISIBLE else View.GONE
                 rvChats.visibility = if (chats.isEmpty()) View.GONE else View.VISIBLE
