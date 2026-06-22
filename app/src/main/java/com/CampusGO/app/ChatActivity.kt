@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 
 class ChatActivity : AppCompatActivity() {
@@ -37,8 +38,8 @@ class ChatActivity : AppCompatActivity() {
 
     private var messagesListener: ValueEventListener? = null
     private var chatListener: ValueEventListener? = null
-
     private var taskListener: ValueEventListener? = null
+
     private lateinit var chatId: String
     private lateinit var taskId: String
 
@@ -188,18 +189,23 @@ class ChatActivity : AppCompatActivity() {
         val task = currentTask
 
         if (chat != null) {
-            val otherName = if (chat.posterId == uid) {
-                chat.runnerName
-            } else {
-                chat.posterName
+            val otherName = when (uid) {
+                chat.posterId -> chat.runnerName.ifBlank { "Runner" }
+                chat.runnerId -> chat.posterName.ifBlank { "Poster" }
+                else -> "Chat"
             }
 
             binding.tvOtherName.text = otherName
+
+            Log.d(TAG, "Toolbar current uid: $uid")
+            Log.d(TAG, "Toolbar poster: ${chat.posterId} / ${chat.posterName}")
+            Log.d(TAG, "Toolbar runner: ${chat.runnerId} / ${chat.runnerName}")
+            Log.d(TAG, "Toolbar showing: $otherName")
         } else if (task != null) {
             val otherName = if (task.posterId == uid) {
-                "Runner"
+                task.runnerName.ifBlank { "Runner" }
             } else {
-                task.posterName
+                task.posterName.ifBlank { "Poster" }
             }
 
             binding.tvOtherName.text = otherName
@@ -215,14 +221,12 @@ class ChatActivity : AppCompatActivity() {
         val isRunner = chat.runnerId == uid
         val finalPrice = chat.finalPrice
 
-        // Only runner can make the first price offer.
         binding.btnPriceOffer.visibility = if (isRunner && finalPrice <= 0.0) {
             View.VISIBLE
         } else {
             View.GONE
         }
 
-        // Only runner can continue to confirm the task after price is agreed.
         binding.btnConfirmNow.visibility = if (isRunner && finalPrice > 0.0) {
             View.VISIBLE
         } else {
@@ -242,9 +246,6 @@ class ChatActivity : AppCompatActivity() {
 
         val isRunner = chat.runnerId == uid
         val hasAgreedPrice = chat.finalPrice > 0.0
-
-        // Banner should only appear before runner confirms/accepts the task.
-        // Once task is ACCEPTED, ON_THE_WAY, DELIVERED, COMPLETED, or CANCELLED, hide it.
         val taskStillOpen = task.status == TaskStatus.OPEN
 
         if (isRunner && hasAgreedPrice && taskStillOpen) {
@@ -270,12 +271,19 @@ class ChatActivity : AppCompatActivity() {
                         }
                     }
 
+                    messages.sortWith(
+                        compareBy<Message> { it.createdAt }
+                            .thenBy { it.id }
+                    )
+
                     Log.d(TAG, "Messages received from chatId $chatId: ${messages.size}")
 
                     adapter.setMessages(messages)
 
                     if (messages.isNotEmpty()) {
-                        binding.rvMessages.scrollToPosition(messages.size - 1)
+                        binding.rvMessages.post {
+                            binding.rvMessages.scrollToPosition(messages.size - 1)
+                        }
                     }
                 }
 
@@ -312,25 +320,27 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
-        val msg = Message(
-            id = msgId,
-            senderId = uid,
-            senderName = senderName,
-            content = content,
-            type = MessageType.TEXT,
-            createdAt = System.currentTimeMillis()
+        val msgMap = mapOf<String, Any>(
+            "id" to msgId,
+            "senderId" to uid,
+            "senderName" to senderName,
+            "content" to content,
+            "type" to MessageType.TEXT,
+            "priceAmount" to 0.0,
+            "priceStatus" to "",
+            "createdAt" to ServerValue.TIMESTAMP
         )
 
-        msgRef.setValue(msg)
+        msgRef.setValue(msgMap)
             .addOnSuccessListener {
                 Log.d(TAG, "Message sent successfully to chatId: $chatId")
 
                 db.child("chats")
                     .child(chatId)
                     .updateChildren(
-                        mapOf(
+                        mapOf<String, Any>(
                             "lastMessage" to content,
-                            "lastMessageTime" to msg.createdAt
+                            "lastMessageTime" to ServerValue.TIMESTAMP
                         )
                     )
                     .addOnFailureListener { e ->
@@ -435,27 +445,27 @@ class ChatActivity : AppCompatActivity() {
 
         val offerText = "Price offer: RM ${String.format("%.2f", offerPrice)}"
 
-        val msg = Message(
-            id = msgId,
-            senderId = uid,
-            senderName = senderName,
-            content = offerText,
-            type = MessageType.PRICE_OFFER,
-            priceAmount = offerPrice,
-            priceStatus = PriceStatus.PENDING,
-            createdAt = System.currentTimeMillis()
+        val msgMap = mapOf<String, Any>(
+            "id" to msgId,
+            "senderId" to uid,
+            "senderName" to senderName,
+            "content" to offerText,
+            "type" to MessageType.PRICE_OFFER,
+            "priceAmount" to offerPrice,
+            "priceStatus" to PriceStatus.PENDING,
+            "createdAt" to ServerValue.TIMESTAMP
         )
 
-        msgRef.setValue(msg)
+        msgRef.setValue(msgMap)
             .addOnSuccessListener {
                 Log.d(TAG, "Price offer sent successfully to chatId: $chatId")
 
                 db.child("chats")
                     .child(chatId)
                     .updateChildren(
-                        mapOf(
+                        mapOf<String, Any>(
                             "lastMessage" to offerText,
-                            "lastMessageTime" to msg.createdAt
+                            "lastMessageTime" to ServerValue.TIMESTAMP
                         )
                     )
                     .addOnFailureListener { e ->
@@ -483,8 +493,6 @@ class ChatActivity : AppCompatActivity() {
         val isPriceOffer = priceMsg.type == MessageType.PRICE_OFFER
         val noFinalPriceYet = chat.finalPrice <= 0.0
 
-        // Both poster and runner can counter,
-        // but only against the OTHER person's pending offer.
         return isParticipant && offerFromOtherUser && isPending && isPriceOffer && noFinalPriceYet
     }
 
@@ -588,7 +596,6 @@ class ChatActivity : AppCompatActivity() {
 
         val senderName = auth.currentUser?.displayName ?: "Unknown"
 
-        // Mark previous offer as replaced
         db.child("messages")
             .child(chatId)
             .child(originalOfferMsg.id)
@@ -609,29 +616,32 @@ class ChatActivity : AppCompatActivity() {
 
         val counterText = "Counter offer: RM ${String.format("%.2f", counterPrice)}"
 
-        val counterMsg = Message(
-            id = msgId,
-            senderId = uid,
-            senderName = senderName,
-            content = counterText,
-            type = MessageType.PRICE_OFFER,
-            priceAmount = counterPrice,
-            priceStatus = PriceStatus.PENDING,
-            createdAt = System.currentTimeMillis()
+        val msgMap = mapOf<String, Any>(
+            "id" to msgId,
+            "senderId" to uid,
+            "senderName" to senderName,
+            "content" to counterText,
+            "type" to MessageType.PRICE_OFFER,
+            "priceAmount" to counterPrice,
+            "priceStatus" to PriceStatus.PENDING,
+            "createdAt" to ServerValue.TIMESTAMP
         )
 
-        msgRef.setValue(counterMsg)
+        msgRef.setValue(msgMap)
             .addOnSuccessListener {
                 Log.d(TAG, "Counter offer sent successfully")
 
                 db.child("chats")
                     .child(chatId)
                     .updateChildren(
-                        mapOf(
+                        mapOf<String, Any>(
                             "lastMessage" to counterText,
-                            "lastMessageTime" to counterMsg.createdAt
+                            "lastMessageTime" to ServerValue.TIMESTAMP
                         )
                     )
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Failed to update chat after counter offer", e)
+                    }
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to send counter offer", e)
@@ -712,35 +722,35 @@ class ChatActivity : AppCompatActivity() {
 
         val agreedText = "Price agreed at RM ${String.format("%.2f", priceMsg.priceAmount)}"
 
-        val agreedMsg = Message(
-            id = msgId,
-            senderId = uid,
-            senderName = myName,
-            content = agreedText,
-            type = MessageType.PRICE_AGREED,
-            priceAmount = priceMsg.priceAmount,
-            priceStatus = PriceStatus.ACCEPTED,
-            createdAt = System.currentTimeMillis()
+        val msgMap = mapOf<String, Any>(
+            "id" to msgId,
+            "senderId" to uid,
+            "senderName" to myName,
+            "content" to agreedText,
+            "type" to MessageType.PRICE_AGREED,
+            "priceAmount" to priceMsg.priceAmount,
+            "priceStatus" to PriceStatus.ACCEPTED,
+            "createdAt" to ServerValue.TIMESTAMP
         )
 
-        msgRef.setValue(agreedMsg)
+        msgRef.setValue(msgMap)
             .addOnSuccessListener {
                 Log.d(TAG, "Price agreement message sent successfully")
 
                 db.child("chats")
                     .child(chatId)
                     .updateChildren(
-                        mapOf(
+                        mapOf<String, Any>(
                             "finalPrice" to priceMsg.priceAmount,
                             "lastMessage" to "Price agreed RM ${String.format("%.2f", priceMsg.priceAmount)}",
-                            "lastMessageTime" to agreedMsg.createdAt
+                            "lastMessageTime" to ServerValue.TIMESTAMP
                         )
                     )
                     .addOnFailureListener { e ->
                         Log.e(TAG, "Failed to update chat final price", e)
                     }
 
-                showAgreedBanner(priceMsg.priceAmount)
+                updateAgreedBanner()
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to send agreed price message", e)
@@ -781,38 +791,32 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
+        if (chat.finalPrice > 0.0) {
+            Toast.makeText(this, "Price has already been agreed", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val rejectText = "Offer rejected"
+
         db.child("messages")
             .child(chatId)
             .child(priceMsg.id)
             .child("priceStatus")
             .setValue(PriceStatus.REJECTED)
             .addOnSuccessListener {
-                val rejectText = "Offer rejected"
-
-                val msgRef = db.child("messages").child(chatId).push()
-                val msgId = msgRef.key ?: return@addOnSuccessListener
-
-                val systemMsg = Message(
-                    id = msgId,
-                    senderId = uid,
-                    senderName = auth.currentUser?.displayName ?: "Unknown",
-                    content = rejectText,
-                    type = MessageType.SYSTEM,
-                    createdAt = System.currentTimeMillis()
-                )
-
-                msgRef.setValue(systemMsg)
-
                 db.child("chats")
                     .child(chatId)
                     .updateChildren(
-                        mapOf(
+                        mapOf<String, Any>(
                             "lastMessage" to rejectText,
-                            "lastMessageTime" to systemMsg.createdAt
+                            "lastMessageTime" to ServerValue.TIMESTAMP
                         )
                     )
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Failed to update chat after rejecting offer", e)
+                    }
 
-                Toast.makeText(this, "Offer rejected", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, rejectText, Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Failed to reject offer: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -828,6 +832,7 @@ class ChatActivity : AppCompatActivity() {
             navigateToConfirm()
         }
     }
+
     private fun navigateToConfirm() {
         val task = currentTask ?: run {
             Toast.makeText(this, "Task not loaded yet", Toast.LENGTH_SHORT).show()

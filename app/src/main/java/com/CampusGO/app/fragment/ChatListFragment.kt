@@ -78,21 +78,21 @@ class ChatListFragment : Fragment() {
                     val chats = mutableListOf<Chat>()
 
                     for (child in snapshot.children) {
-                        val chat = child.getValue(Chat::class.java) ?: continue
+                        if (child.key == "_placeholder") continue
 
-                        // CHANGE:
-                        // Sometimes chat.id inside Firebase data may be empty/missing.
-                        // Firebase child key is the real chatId, so use it as backup.
+                        val chat = try {
+                            child.getValue(Chat::class.java)
+                        } catch (e: Exception) {
+                            Log.e("ChatListFragment", "Invalid chat data at ${child.key}", e)
+                            null
+                        } ?: continue
+
                         val firebaseChatId = child.key ?: ""
 
                         if (chat.id.isEmpty()) {
                             chat.id = firebaseChatId
                         }
 
-                        // CHANGE:
-                        // Old check only used posterId and runnerId.
-                        // New check also supports participants map:
-                        // participants/userId = true
                         val isParticipantByOldFields =
                             chat.posterId == uid || chat.runnerId == uid
 

@@ -1,8 +1,10 @@
 package com.CampusGO.app.adapter
 
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.CampusGO.app.R
@@ -109,6 +111,11 @@ class MessageAdapter(
     private fun bindPriceMessage(holder: PriceHolder, msg: Message, timeStr: String) {
         val isMine = msg.senderId == currentUserId
 
+        // Price messages use one shared layout, so align manually.
+        // My offers go to the right; the other user's offers go to the left.
+        val rootLayout = holder.itemView as? LinearLayout
+        rootLayout?.gravity = if (isMine) Gravity.END else Gravity.START
+
         holder.tvPriceAmount.text = "RM ${String.format("%.2f", msg.priceAmount)}"
         holder.tvTime.text = timeStr
 
@@ -135,10 +142,13 @@ class MessageAdapter(
             holder.tvPriceNote.visibility = View.GONE
         }
 
-        // Default: hide both buttons first
+        // Default: hide and re-enable all buttons first.
         holder.btnAcceptPrice.visibility = View.GONE
         holder.btnEditPrice.visibility = View.GONE
         holder.btnRejectPrice.visibility = View.GONE
+        holder.btnAcceptPrice.isEnabled = true
+        holder.btnEditPrice.isEnabled = true
+        holder.btnRejectPrice.isEnabled = true
 
         when {
             msg.type == MessageType.PRICE_AGREED -> {
@@ -159,6 +169,7 @@ class MessageAdapter(
                 if (!isMine) {
                     holder.btnAcceptPrice.visibility = View.VISIBLE
                     holder.btnAcceptPrice.setOnClickListener {
+                        holder.btnAcceptPrice.isEnabled = false
                         onAcceptPrice(msg)
                     }
                 }
@@ -166,6 +177,7 @@ class MessageAdapter(
                 if (canEditPrice(msg)) {
                     holder.btnEditPrice.visibility = View.VISIBLE
                     holder.btnEditPrice.setOnClickListener {
+                        holder.btnEditPrice.isEnabled = false
                         onEditPrice(msg)
                     }
                 }
@@ -173,6 +185,7 @@ class MessageAdapter(
                 if (canRejectPrice(msg)) {
                     holder.btnRejectPrice.visibility = View.VISIBLE
                     holder.btnRejectPrice.setOnClickListener {
+                        holder.btnRejectPrice.isEnabled = false
                         onRejectPrice(msg)
                     }
                 }
@@ -190,7 +203,9 @@ class MessageAdapter(
 
     fun setMessages(newMessages: List<Message>) {
         messages.clear()
-        messages.addAll(newMessages)
+        // Do not render system status messages as normal chat bubbles.
+        // Rejected offers are already shown by the price card status.
+        messages.addAll(newMessages.filter { it.type != MessageType.SYSTEM })
         notifyDataSetChanged()
     }
 

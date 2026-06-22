@@ -104,7 +104,14 @@ class FeedFragment : Fragment() {
                     val currentUid = auth.currentUser?.uid
 
                     for (child in snapshot.children) {
-                        val task = child.getValue(Task::class.java) ?: continue
+                        if (child.key == "_placeholder") continue
+
+                        val task = try {
+                            child.getValue(Task::class.java)
+                        } catch (e: Exception) {
+                            Log.e("FeedFragment", "Invalid task data at ${child.key}", e)
+                            null
+                        } ?: continue
 
                         if (task.status == TaskStatus.OPEN && task.posterId != currentUid) {
                             allTasks.add(0, task)
