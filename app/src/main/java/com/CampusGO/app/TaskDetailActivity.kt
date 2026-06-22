@@ -31,6 +31,7 @@ class TaskDetailActivity : AppCompatActivity() {
 
         val taskId = intent.getStringExtra("taskId") ?: run { finish(); return }
 
+        InsetsHelper.applyTopInsetPadding(binding.toolbarContainer)
         binding.btnBack.setOnClickListener { finish() }
 
         binding.btnMore.setOnClickListener {

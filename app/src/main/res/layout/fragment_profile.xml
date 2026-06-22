@@ -6,6 +6,7 @@
     android:background="@color/campusgo_background">
 
     <LinearLayout
+        android:id="@+id/profileContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"

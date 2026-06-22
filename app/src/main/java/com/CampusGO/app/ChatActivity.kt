@@ -44,6 +44,7 @@ class ChatActivity : AppCompatActivity() {
         taskId = intent.getStringExtra("taskId") ?: run { finish(); return }
         chatId = intent.getStringExtra("chatId") ?: run { finish(); return }
 
+        InsetsHelper.applyTopInsetPadding(binding.toolbarContainer)
         binding.btnBack.setOnClickListener { finish() }
 
         adapter = MessageAdapter(

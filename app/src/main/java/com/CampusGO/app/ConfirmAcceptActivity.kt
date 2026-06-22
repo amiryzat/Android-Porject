@@ -28,6 +28,7 @@ class ConfirmAcceptActivity : AppCompatActivity() {
         val taskId = intent.getStringExtra("taskId") ?: run { finish(); return }
         val agreedPrice = intent.getDoubleExtra("agreedPrice", 0.0)
 
+        InsetsHelper.applyTopInsetPadding(binding.toolbarContainer)
         binding.btnBack.setOnClickListener { finish() }
         binding.btnBackToNeg.setOnClickListener { finish() }
 

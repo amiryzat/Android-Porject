@@ -31,6 +31,7 @@ class CreateTaskActivity : AppCompatActivity() {
         binding = ActivityCreateTaskBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        InsetsHelper.applyTopInsetPadding(binding.toolbarContainer)
         binding.btnBack.setOnClickListener { finish() }
 
         binding.btnNegotiable.setOnClickListener {

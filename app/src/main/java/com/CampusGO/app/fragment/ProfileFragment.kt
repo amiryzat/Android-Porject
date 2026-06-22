@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.CampusGO.app.InsetsHelper
 import com.CampusGO.app.LoginActivity
 import com.CampusGO.app.R
 import com.CampusGO.app.model.User
@@ -30,6 +31,7 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        InsetsHelper.applyTopInsetPadding(view.findViewById(R.id.profileContent))
         val tvAvatarLarge = view.findViewById<TextView>(R.id.tvAvatarLarge)
         val tvFullName   = view.findViewById<TextView>(R.id.tvFullName)
         val tvEmail      = view.findViewById<TextView>(R.id.tvEmail)

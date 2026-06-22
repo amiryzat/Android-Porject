@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.CampusGO.app.ChatActivity
+import com.CampusGO.app.InsetsHelper
 import com.CampusGO.app.R
 import com.CampusGO.app.adapter.ChatListAdapter
 import com.CampusGO.app.model.Chat
@@ -36,6 +37,7 @@ class ChatListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        InsetsHelper.applyTopInsetPadding(view.findViewById(R.id.toolbarContainer))
         rvChats = view.findViewById(R.id.rvChats)
         tvEmpty = view.findViewById(R.id.tvEmpty)
 

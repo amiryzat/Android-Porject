@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.CampusGO.app.InsetsHelper
 import com.CampusGO.app.R
 import com.CampusGO.app.TaskTrackingActivity
 import com.CampusGO.app.adapter.MyTaskAdapter
@@ -48,6 +49,7 @@ class TasksFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d("TasksFragment", "onViewCreated")
 
+        InsetsHelper.applyTopInsetPadding(view.findViewById(R.id.toolbarContainer))
         rvMyTasks = view.findViewById(R.id.rvMyTasks)
         tvStats = view.findViewById(R.id.tvStats)
         tvEmpty = view.findViewById(R.id.tvEmpty)
