@@ -11,12 +11,17 @@ import com.CampusGO.app.model.MessageType
 import com.CampusGO.app.model.PriceStatus
 import com.google.android.material.button.MaterialButton
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class MessageAdapter(
     private val currentUserId: String,
     private val originalPrice: Double,
-    private val onAcceptPrice: (Message) -> Unit
+    private val onAcceptPrice: (Message) -> Unit,
+    private val onEditPrice: (Message) -> Unit,
+    private val canEditPrice: (Message) -> Boolean,
+    private val onRejectPrice: (Message) -> Unit, // ADD THIS
+    private val canRejectPrice: (Message) -> Boolean // ADD THIS
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val messages = mutableListOf<Message>()
@@ -43,11 +48,18 @@ class MessageAdapter(
         val tvPriceNote: TextView = view.findViewById(R.id.tvPriceNote)
         val tvPriceStatus: TextView = view.findViewById(R.id.tvPriceStatus)
         val btnAcceptPrice: MaterialButton = view.findViewById(R.id.btnAcceptPrice)
+
+        val btnRejectPrice: MaterialButton = view.findViewById(R.id.btnRejectPrice)
+
+        // CHANGE: Add this button in item_message_price.xml
+        val btnEditPrice: MaterialButton = view.findViewById(R.id.btnEditPrice)
+
         val tvTime: TextView = view.findViewById(R.id.tvTime)
     }
 
     override fun getItemViewType(position: Int): Int {
         val msg = messages[position]
+
         return when {
             msg.type == MessageType.PRICE_OFFER || msg.type == MessageType.PRICE_AGREED -> VIEW_PRICE
             msg.senderId == currentUserId -> VIEW_SENT
@@ -57,10 +69,19 @@ class MessageAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
+
         return when (viewType) {
-            VIEW_SENT -> SentHolder(inflater.inflate(R.layout.item_message_sent, parent, false))
-            VIEW_PRICE -> PriceHolder(inflater.inflate(R.layout.item_message_price, parent, false))
-            else -> ReceivedHolder(inflater.inflate(R.layout.item_message_received, parent, false))
+            VIEW_SENT -> SentHolder(
+                inflater.inflate(R.layout.item_message_sent, parent, false)
+            )
+
+            VIEW_PRICE -> PriceHolder(
+                inflater.inflate(R.layout.item_message_price, parent, false)
+            )
+
+            else -> ReceivedHolder(
+                inflater.inflate(R.layout.item_message_received, parent, false)
+            )
         }
     }
 
@@ -73,46 +94,99 @@ class MessageAdapter(
                 holder.tvContent.text = msg.content
                 holder.tvTime.text = timeStr
             }
+
             is ReceivedHolder -> {
                 holder.tvContent.text = msg.content
                 holder.tvTime.text = timeStr
             }
+
             is PriceHolder -> {
-                val isMine = msg.senderId == currentUserId
-                val fromLabel = if (isMine) "PRICE OFFER · from you" else "PRICE OFFER · from ${msg.senderName}"
-                holder.tvPriceLabel.text = if (msg.type == MessageType.PRICE_AGREED) "AGREED PRICE ✓" else fromLabel
-                holder.tvPriceAmount.text = "RM ${String.format("%.2f", msg.priceAmount)}"
-                if (originalPrice > 0 && msg.priceAmount != originalPrice) {
-                    holder.tvPriceNote.text = "up from RM ${String.format("%.2f", originalPrice)}"
-                    holder.tvPriceNote.visibility = View.VISIBLE
-                } else {
-                    holder.tvPriceNote.visibility = View.GONE
-                }
-                when {
-                    msg.type == MessageType.PRICE_AGREED -> {
-                        holder.tvPriceStatus.text = "AGREED ✓"
-                        holder.btnAcceptPrice.visibility = View.GONE
-                    }
-                    msg.priceStatus == PriceStatus.PENDING && !isMine -> {
-                        holder.tvPriceStatus.text = "PENDING"
-                        holder.btnAcceptPrice.visibility = View.VISIBLE
-                        holder.btnAcceptPrice.setOnClickListener { onAcceptPrice(msg) }
-                    }
-                    msg.priceStatus == PriceStatus.ACCEPTED -> {
-                        holder.tvPriceStatus.text = "ACCEPTED ✓"
-                        holder.btnAcceptPrice.visibility = View.GONE
-                    }
-                    else -> {
-                        holder.tvPriceStatus.text = "PENDING"
-                        holder.btnAcceptPrice.visibility = View.GONE
-                    }
-                }
-                holder.tvTime.text = timeStr
+                bindPriceMessage(holder, msg, timeStr)
             }
         }
     }
 
-    override fun getItemCount() = messages.size
+    private fun bindPriceMessage(holder: PriceHolder, msg: Message, timeStr: String) {
+        val isMine = msg.senderId == currentUserId
+
+        holder.tvPriceAmount.text = "RM ${String.format("%.2f", msg.priceAmount)}"
+        holder.tvTime.text = timeStr
+
+        // CHANGE: Different label for agreed price, own offer, and other person's offer
+        holder.tvPriceLabel.text = when {
+            msg.type == MessageType.PRICE_AGREED -> {
+                "AGREED PRICE ✓"
+            }
+
+            isMine -> {
+                "PRICE OFFER · from you"
+            }
+
+            else -> {
+                "PRICE OFFER · from ${msg.senderName}"
+            }
+        }
+
+        if (originalPrice > 0 && msg.priceAmount != originalPrice) {
+            val direction = if (msg.priceAmount > originalPrice) "up from" else "down from"
+            holder.tvPriceNote.text = "$direction RM ${String.format("%.2f", originalPrice)}"
+            holder.tvPriceNote.visibility = View.VISIBLE
+        } else {
+            holder.tvPriceNote.visibility = View.GONE
+        }
+
+        // Default: hide both buttons first
+        holder.btnAcceptPrice.visibility = View.GONE
+        holder.btnEditPrice.visibility = View.GONE
+        holder.btnRejectPrice.visibility = View.GONE
+
+        when {
+            msg.type == MessageType.PRICE_AGREED -> {
+                holder.tvPriceStatus.text = "AGREED ✓"
+            }
+
+            msg.priceStatus == PriceStatus.ACCEPTED -> {
+                holder.tvPriceStatus.text = "ACCEPTED ✓"
+            }
+
+            msg.priceStatus == PriceStatus.REJECTED -> {
+                holder.tvPriceStatus.text = "REPLACED"
+            }
+
+            msg.priceStatus == PriceStatus.PENDING -> {
+                holder.tvPriceStatus.text = "PENDING"
+
+                if (!isMine) {
+                    holder.btnAcceptPrice.visibility = View.VISIBLE
+                    holder.btnAcceptPrice.setOnClickListener {
+                        onAcceptPrice(msg)
+                    }
+                }
+
+                if (canEditPrice(msg)) {
+                    holder.btnEditPrice.visibility = View.VISIBLE
+                    holder.btnEditPrice.setOnClickListener {
+                        onEditPrice(msg)
+                    }
+                }
+
+                if (canRejectPrice(msg)) {
+                    holder.btnRejectPrice.visibility = View.VISIBLE
+                    holder.btnRejectPrice.setOnClickListener {
+                        onRejectPrice(msg)
+                    }
+                }
+            }
+
+            else -> {
+                holder.tvPriceStatus.text = "PENDING"
+            }
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return messages.size
+    }
 
     fun setMessages(newMessages: List<Message>) {
         messages.clear()

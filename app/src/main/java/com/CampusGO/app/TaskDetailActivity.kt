@@ -2,14 +2,15 @@ package com.CampusGO.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log // CHANGE: Added for Logcat checking
 import android.view.View
 import android.widget.PopupMenu
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityTaskDetailBinding
 import com.CampusGO.app.model.Task
 import com.CampusGO.app.model.TaskStatus
+import com.CampusGO.app.util.ChatIdHelper // CHANGE: Added ChatIdHelper import
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -21,40 +22,64 @@ class TaskDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTaskDetailBinding
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance().reference
+
     private var currentTask: Task? = null
     private var taskListener: ValueEventListener? = null
+
+    companion object {
+        private const val TAG = "TaskDetailActivity" // CHANGE: Added TAG for Logcat
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTaskDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val taskId = intent.getStringExtra("taskId") ?: run { finish(); return }
+        val taskId = intent.getStringExtra("taskId") ?: run {
+            finish()
+            return
+        }
 
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener {
+            finish()
+        }
 
         binding.btnMore.setOnClickListener {
             val task = currentTask ?: return@setOnClickListener
             val uid = auth.currentUser?.uid ?: return@setOnClickListener
+
             if (task.posterId == uid) {
                 val popup = PopupMenu(this, binding.btnMore)
                 popup.menu.add("Cancel Task")
+
                 popup.setOnMenuItemClickListener {
                     confirmCancelTask(task)
                     true
                 }
+
                 popup.show()
             }
         }
 
-        taskListener = db.child("tasks").child(taskId).addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val task = snapshot.getValue(Task::class.java) ?: return
-                currentTask = task
-                bindTask(task)
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
+        taskListener = db.child("tasks")
+            .child(taskId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val task = snapshot.getValue(Task::class.java) ?: return
+                    currentTask = task
+                    bindTask(task)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // CHANGE: Added error message instead of leaving empty
+                    Log.e(TAG, "Failed to load task: ${error.message}", error.toException())
+                    Toast.makeText(
+                        this@TaskDetailActivity,
+                        "Failed to load task: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
 
     private fun bindTask(task: Task) {
@@ -82,17 +107,22 @@ class TaskDetailActivity : AppCompatActivity() {
         when {
             isMyTask -> {
                 binding.llRunnerActions.visibility = View.GONE
-                binding.llPosterActions.visibility = if (task.status != TaskStatus.OPEN) View.VISIBLE else View.GONE
+                binding.llPosterActions.visibility =
+                    if (task.status != TaskStatus.OPEN) View.VISIBLE else View.GONE
+
                 binding.btnTrack.setOnClickListener {
                     startActivity(Intent(this, TaskTrackingActivity::class.java).apply {
                         putExtra("taskId", task.id)
                     })
                 }
             }
+
             task.status != TaskStatus.OPEN -> {
                 binding.llRunnerActions.visibility = View.GONE
+
                 if (isRunner) {
                     binding.llPosterActions.visibility = View.VISIBLE
+
                     binding.btnTrack.setOnClickListener {
                         startActivity(Intent(this, TaskTrackingActivity::class.java).apply {
                             putExtra("taskId", task.id)
@@ -100,13 +130,38 @@ class TaskDetailActivity : AppCompatActivity() {
                     }
                 }
             }
+
             else -> {
                 binding.llRunnerActions.visibility = View.VISIBLE
                 binding.llPosterActions.visibility = View.GONE
 
                 binding.btnNegotiate.setOnClickListener {
-                    val chatId = "${task.id}_${uid}"
+                    // CHANGE:
+                    // OLD CODE:
+                    // val chatId = "${task.id}_${uid}"
+                    //
+                    // PROBLEM:
+                    // Runner gets taskId_runnerId.
+                    // Poster gets taskId_posterId.
+                    // That creates different chat rooms.
+                    //
+                    // NEW FIX:
+                    // Use taskId + posterId + runnerId.
+                    // ChatIdHelper sorts user IDs, so both users get the same chatId.
+                    val chatId = ChatIdHelper.buildChatId(
+                        taskId = task.id,
+                        userA = task.posterId,
+                        userB = uid
+                    )
+
+                    // CHANGE: Added Logcat checking
+                    Log.d(TAG, "Opening negotiate chat")
+                    Log.d(TAG, "Current user/runnerId: $uid")
+                    Log.d(TAG, "Poster ID: ${task.posterId}")
+                    Log.d(TAG, "Generated chatId: $chatId")
+
                     ensureChatExists(task, chatId)
+
                     startActivity(Intent(this, ChatActivity::class.java).apply {
                         putExtra("taskId", task.id)
                         putExtra("chatId", chatId)
@@ -126,24 +181,66 @@ class TaskDetailActivity : AppCompatActivity() {
     private fun ensureChatExists(task: Task, chatId: String) {
         val uid = auth.currentUser?.uid ?: return
         val runnerName = auth.currentUser?.displayName ?: "Unknown"
-        db.child("chats").child(chatId).get().addOnSuccessListener { snap ->
-            if (!snap.exists()) {
-                val chat = mapOf(
-                    "id" to chatId,
-                    "taskId" to task.id,
-                    "taskTitle" to task.title,
-                    "taskNumber" to task.taskNumber,
-                    "posterId" to task.posterId,
-                    "posterName" to task.posterName,
-                    "runnerId" to uid,
-                    "runnerName" to runnerName,
-                    "lastMessage" to "",
-                    "lastMessageTime" to 0L,
-                    "finalPrice" to 0.0
-                )
-                db.child("chats").child(chatId).setValue(chat)
+
+        db.child("chats")
+            .child(chatId)
+            .get()
+            .addOnSuccessListener { snap ->
+                if (!snap.exists()) {
+                    // CHANGE:
+                    // Chat is now saved using the fixed chatId.
+                    // Also added participants, useful later for Firebase rules.
+                    val chat = mapOf(
+                        "id" to chatId,
+                        "taskId" to task.id,
+                        "taskTitle" to task.title,
+                        "taskNumber" to task.taskNumber,
+
+                        "posterId" to task.posterId,
+                        "posterName" to task.posterName,
+
+                        "runnerId" to uid,
+                        "runnerName" to runnerName,
+
+                        // CHANGE: Added participants map
+                        "participants" to mapOf(
+                            task.posterId to true,
+                            uid to true
+                        ),
+
+                        "lastMessage" to "",
+                        "lastMessageTime" to 0L,
+                        "finalPrice" to 0.0
+                    )
+
+                    db.child("chats")
+                        .child(chatId)
+                        .setValue(chat)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Chat created successfully: $chatId")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Failed to create chat", e)
+                            Toast.makeText(
+                                this,
+                                "Failed to create chat: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                } else {
+                    // CHANGE: Added log if chat already exists
+                    Log.d(TAG, "Chat already exists: $chatId")
+                }
             }
-        }
+            .addOnFailureListener { e ->
+                // CHANGE: Added failure handling
+                Log.e(TAG, "Failed to check chat", e)
+                Toast.makeText(
+                    this,
+                    "Failed to open chat: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
     }
 
     private fun confirmCancelTask(task: Task) {
@@ -151,19 +248,37 @@ class TaskDetailActivity : AppCompatActivity() {
             .setTitle("Cancel Task")
             .setMessage("Are you sure you want to cancel \"${task.title}\"? It will be removed from the feed.")
             .setPositiveButton("Cancel Task") { _, _ ->
-                db.child("tasks").child(task.id).child("status").setValue(TaskStatus.CANCELLED)
+                db.child("tasks")
+                    .child(task.id)
+                    .child("status")
+                    .setValue(TaskStatus.CANCELLED)
                     .addOnSuccessListener {
                         Toast.makeText(this, "Task cancelled.", Toast.LENGTH_SHORT).show()
                         finish()
                     }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(
+                            this,
+                            "Failed to cancel task: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
             }
-            .setNegativeButton("Keep It") { d, _ -> d.dismiss() }
+            .setNegativeButton("Keep It") { d, _ ->
+                d.dismiss()
+            }
             .show()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+
         val taskId = intent.getStringExtra("taskId") ?: return
-        taskListener?.let { db.child("tasks").child(taskId).removeEventListener(it) }
+
+        taskListener?.let {
+            db.child("tasks")
+                .child(taskId)
+                .removeEventListener(it)
+        }
     }
 }
