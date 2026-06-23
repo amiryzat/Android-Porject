@@ -38,6 +38,7 @@
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
@@ -239,15 +240,16 @@
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Search and select bank">
+                            android:hint="Select Bank">
 
-                            <AutoCompleteTextView
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etBankSelection"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:completionThreshold="1"
-                                android:inputType="text"
-                                android:imeOptions="actionDone" />
+                                android:focusable="false"
+                                android:clickable="true"
+                                android:cursorVisible="false"
+                                android:inputType="none" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 

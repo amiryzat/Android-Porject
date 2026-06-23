@@ -2,7 +2,6 @@ package com.CampusGO.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityWalletCashOutBinding
@@ -10,7 +9,7 @@ import com.CampusGO.app.model.Wallet
 import com.CampusGO.app.model.WalletTransaction
 import com.CampusGO.app.model.WalletTransactionStatus
 import com.CampusGO.app.model.WalletTransactionType
-import com.CampusGO.app.util.MalaysianBanks
+import com.CampusGO.app.util.handleKeyboardInsets
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -32,7 +31,8 @@ class WalletCashOutActivity : AppCompatActivity() {
         binding = ActivityWalletCashOutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupBankDropdown()
+        handleKeyboardInsets(binding.scrollView)
+        setupBankPicker()
         loadWalletBalance()
 
         binding.btnBack.setOnClickListener { finish() }
@@ -53,25 +53,17 @@ class WalletCashOutActivity : AppCompatActivity() {
             })
     }
 
-    private fun setupBankDropdown() {
-        val bankAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_dropdown_item_1line,
-            MalaysianBanks.banks
-        )
-        binding.etBankName.setAdapter(bankAdapter)
-        binding.etBankName.threshold = 1
-
-        binding.etBankName.setOnItemClickListener { _, _, position, _ ->
-            selectedBank = bankAdapter.getItem(position) ?: ""
-            binding.layoutBankName.error = null
-        }
-
-        binding.etBankName.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && !MalaysianBanks.banks.contains(binding.etBankName.text.toString())) {
-                selectedBank = ""
+    private fun setupBankPicker() {
+        val openPicker = {
+            val picker = BankPickerBottomSheet()
+            picker.onBankSelected = { bank ->
+                selectedBank = bank
+                binding.etBankName.setText(bank)
+                binding.layoutBankName.error = null
             }
+            picker.show(supportFragmentManager, "bank_picker")
         }
+        binding.etBankName.setOnClickListener { openPicker() }
     }
 
     private fun onSubmitTapped() {
@@ -104,9 +96,8 @@ class WalletCashOutActivity : AppCompatActivity() {
             }
         }
 
-        val typedBank = binding.etBankName.text.toString()
-        if (selectedBank.isEmpty() || !MalaysianBanks.banks.contains(typedBank)) {
-            binding.layoutBankName.error = "Please select a bank from the list"
+        if (selectedBank.isEmpty()) {
+            binding.layoutBankName.error = "Please select a bank"
             valid = false
         }
 

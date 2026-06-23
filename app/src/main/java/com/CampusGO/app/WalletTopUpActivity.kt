@@ -3,12 +3,11 @@ package com.CampusGO.app
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityWalletTopUpBinding
 import com.CampusGO.app.model.Wallet
-import com.CampusGO.app.util.MalaysianBanks
+import com.CampusGO.app.util.handleKeyboardInsets
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -30,7 +29,8 @@ class WalletTopUpActivity : AppCompatActivity() {
         binding = ActivityWalletTopUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupBankDropdown()
+        handleKeyboardInsets(binding.scrollView)
+        setupBankPicker()
         setupPaymentMethodToggle()
         setupAmountChips()
         loadWalletBalance()
@@ -52,25 +52,17 @@ class WalletTopUpActivity : AppCompatActivity() {
             })
     }
 
-    private fun setupBankDropdown() {
-        val bankAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_dropdown_item_1line,
-            MalaysianBanks.banks
-        )
-        binding.etBankSelection.setAdapter(bankAdapter)
-        binding.etBankSelection.threshold = 1
-
-        binding.etBankSelection.setOnItemClickListener { _, _, position, _ ->
-            selectedBank = bankAdapter.getItem(position) ?: ""
-            binding.layoutBankSelection.error = null
-        }
-
-        binding.etBankSelection.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && !MalaysianBanks.banks.contains(binding.etBankSelection.text.toString())) {
-                selectedBank = ""
+    private fun setupBankPicker() {
+        val openPicker = {
+            val picker = BankPickerBottomSheet()
+            picker.onBankSelected = { bank ->
+                selectedBank = bank
+                binding.etBankSelection.setText(bank)
+                binding.layoutBankSelection.error = null
             }
+            picker.show(supportFragmentManager, "bank_picker")
         }
+        binding.etBankSelection.setOnClickListener { openPicker() }
     }
 
     private fun setupPaymentMethodToggle() {
@@ -111,9 +103,8 @@ class WalletTopUpActivity : AppCompatActivity() {
 
         when (methodId) {
             R.id.rbOnlineBanking -> {
-                val typed = binding.etBankSelection.text.toString()
-                if (selectedBank.isEmpty() || !MalaysianBanks.banks.contains(typed)) {
-                    binding.layoutBankSelection.error = "Please select a bank from the list"
+                if (selectedBank.isEmpty()) {
+                    binding.layoutBankSelection.error = "Please select a bank"
                     return
                 }
                 binding.layoutBankSelection.error = null

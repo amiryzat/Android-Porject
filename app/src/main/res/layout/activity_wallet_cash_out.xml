@@ -38,6 +38,7 @@
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
@@ -126,22 +127,23 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Bank name searchable dropdown -->
+                    <!-- Bank picker (opens bottom sheet) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/layoutBankName"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Bank Name"
+                        android:hint="Select Bank"
                         android:layout_marginBottom="12dp">
 
-                        <AutoCompleteTextView
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etBankName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:completionThreshold="1"
-                            android:inputType="text"
-                            android:imeOptions="actionNext" />
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:cursorVisible="false"
+                            android:inputType="none" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
