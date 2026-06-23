@@ -53,13 +53,13 @@ class ChatActivity : AppCompatActivity() {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        taskId = intent.getStringExtra("taskId") ?: run {
+        taskId = intent.getStringExtra("taskId")?.takeIf { it.isNotBlank() } ?: run {
             Toast.makeText(this, "Missing task ID", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        chatId = intent.getStringExtra("chatId") ?: run {
+        chatId = intent.getStringExtra("chatId")?.takeIf { it.isNotBlank() } ?: run {
             Toast.makeText(this, "Missing chat ID", Toast.LENGTH_SHORT).show()
             finish()
             return
