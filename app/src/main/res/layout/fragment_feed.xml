@@ -82,6 +82,42 @@
                     android:layout_height="wrap_content"
                     android:text="Newest" />
 
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipNearby"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nearby" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipFood"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Food" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPrint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Print" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipParcel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Parcel" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipErrand"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Errand" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipOther"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Other" />
+
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 

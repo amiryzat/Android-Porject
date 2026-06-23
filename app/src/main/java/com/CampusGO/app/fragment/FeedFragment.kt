@@ -27,6 +27,15 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Location
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.CampusGO.app.model.TaskCategory
+
 class FeedFragment : Fragment() {
 
     private lateinit var rvTasks: RecyclerView
@@ -42,9 +51,26 @@ class FeedFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
 
     private var tasksListener: ValueEventListener? = null
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var lastUserLocation: Location? = null
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            fetchLastLocation {
+                applyFilter()
+            }
+        } else {
+            if (isAdded) {
+                Toast.makeText(requireContext(), "Location permission required for Nearby filter.", Toast.LENGTH_SHORT).show()
+                chipGroupFilters.check(R.id.chipAll)
+            }
+        }
+    }
 
     companion object {
-        private const val TAG = "FeedFragment" // CHANGE: Added TAG for Logcat
+        private const val TAG = "FeedFragment"
     }
 
     override fun onCreateView(
@@ -57,6 +83,8 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         rvTasks = view.findViewById(R.id.rvTasks)
         tvTaskCount = view.findViewById(R.id.tvTaskCount)
@@ -86,6 +114,26 @@ class FeedFragment : Fragment() {
         }
 
         loadTasks()
+    }
+
+    private fun fetchLastLocation(onSuccess: () -> Unit) {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+                if (loc != null) {
+                    lastUserLocation = loc
+                }
+                onSuccess()
+            }
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     }
 
     private fun loadTasks() {
@@ -138,6 +186,30 @@ class FeedFragment : Fragment() {
             R.id.chipEmergency -> allTasks.filter { it.isEmergency }
             R.id.chipHighest -> allTasks.sortedByDescending { it.price }
             R.id.chipNewest -> allTasks.sortedByDescending { it.createdAt }
+            R.id.chipNearby -> {
+                val loc = lastUserLocation
+                if (loc != null) {
+                    allTasks.filter {
+                        val results = FloatArray(1)
+                        Location.distanceBetween(
+                            loc.latitude, loc.longitude,
+                            it.pickupLatitude, it.pickupLongitude,
+                            results
+                        )
+                        results[0] <= 2000 // 2km
+                    }
+                } else {
+                    fetchLastLocation {
+                        applyFilter()
+                    }
+                    allTasks.toList()
+                }
+            }
+            R.id.chipFood -> allTasks.filter { it.category == TaskCategory.FOOD }
+            R.id.chipPrint -> allTasks.filter { it.category == TaskCategory.PRINT }
+            R.id.chipParcel -> allTasks.filter { it.category == TaskCategory.PARCEL }
+            R.id.chipErrand -> allTasks.filter { it.category == TaskCategory.ERRAND }
+            R.id.chipOther -> allTasks.filter { it.category == TaskCategory.OTHER }
             else -> allTasks.toList()
         }
 

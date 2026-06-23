@@ -14,7 +14,6 @@ import com.CampusGO.app.model.PaymentStatus
 import com.CampusGO.app.model.Task
 import com.CampusGO.app.model.TaskStatus
 import com.CampusGO.app.model.Wallet
-import com.CampusGO.app.model.WalletTransaction
 import com.CampusGO.app.model.WalletTransactionStatus
 import com.CampusGO.app.model.WalletTransactionType
 import com.CampusGO.app.util.ChatIdHelper
@@ -214,7 +213,6 @@ class TaskTrackingActivity : AppCompatActivity() {
                     paymentAmount = paymentAmount,
                     posterId = posterId,
                     posterBalance = posterWalletBalance,
-                    posterSpent = 0.0,
                     runnerId = runnerId,
                     runnerBalance = runnerBalance,
                     runnerEarned = runnerEarned
@@ -223,8 +221,7 @@ class TaskTrackingActivity : AppCompatActivity() {
             .addOnFailureListener { e ->
                 isPaymentInProgress = false
                 binding.btnPosterConfirm.isEnabled = true
-                val payAmt = if (task.agreedPrice > 0) task.agreedPrice else task.price
-                binding.btnPosterConfirm.text = "Confirm & Pay RM ${String.format("%.2f", payAmt)}"
+                binding.btnPosterConfirm.text = "Confirm & Pay ${"RM ${String.format("%.2f", paymentAmount)}"}"
                 Toast.makeText(this, "Could not load runner wallet: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
@@ -234,7 +231,6 @@ class TaskTrackingActivity : AppCompatActivity() {
         paymentAmount: Double,
         posterId: String,
         posterBalance: Double,
-        posterSpent: Double,
         runnerId: String,
         runnerBalance: Double,
         runnerEarned: Double
@@ -282,12 +278,12 @@ class TaskTrackingActivity : AppCompatActivity() {
 
         val updates: Map<String, Any> = mapOf(
             "wallets/$posterId/balance" to (posterBalance - paymentAmount),
-            "wallets/$posterId/totalSpent" to (posterSpent + paymentAmount),
+            "wallets/$posterId/totalSpent" to paymentAmount,
+            "wallets/$posterId/updatedAt" to now,
             "wallets/$runnerId/balance" to (runnerBalance + paymentAmount),
             "wallets/$runnerId/totalEarned" to (runnerEarned + paymentAmount),
             "wallets/$runnerId/userId" to runnerId,
             "wallets/$runnerId/updatedAt" to now,
-            "wallets/$posterId/updatedAt" to now,
             "walletTransactions/$posterId/$posterTxId" to posterTx,
             "walletTransactions/$runnerId/$runnerTxId" to runnerTx,
             "tasks/${task.id}/status" to TaskStatus.COMPLETED,
@@ -299,6 +295,7 @@ class TaskTrackingActivity : AppCompatActivity() {
         db.updateChildren(updates)
             .addOnSuccessListener {
                 isPaymentInProgress = false
+                Toast.makeText(this, "Payment sent! Task completed.", Toast.LENGTH_LONG).show()
                 updateRunnerStats(task)
                 showRateRunnerDialog(task)
             }
@@ -471,7 +468,6 @@ class TaskTrackingActivity : AppCompatActivity() {
 
     private fun updateRunnerStats(task: Task) {
         if (task.runnerId.isEmpty()) return
-
         db.child("userStats").child(task.runnerId).get()
             .addOnSuccessListener { snap ->
                 val completed = (snap.child("completedTasks").getValue(Int::class.java) ?: 0) + 1
@@ -480,7 +476,7 @@ class TaskTrackingActivity : AppCompatActivity() {
     }
 
     private fun showRateRunnerDialog(task: Task) {
-        if (task.runnerId.isEmpty()) return
+        if (task.runnerId.isEmpty() || isFinishing || isDestroyed) return
 
         val ratings = arrayOf(
             "★★★★★  5 - Excellent", "★★★★  4 - Good", "★★★  3 - Average",
