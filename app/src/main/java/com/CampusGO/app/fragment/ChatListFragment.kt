@@ -134,12 +134,13 @@ class ChatListFragment : Fragment() {
     private fun openChat(chat: Chat) {
         if (!isAdded) return
 
-        if (chat.id.isEmpty()) {
-            Toast.makeText(
-                requireContext(),
-                "Chat ID missing",
-                Toast.LENGTH_SHORT
-            ).show()
+        if (chat.id.isBlank()) {
+            Toast.makeText(requireContext(), "Chat ID missing", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (chat.taskId.isBlank()) {
+            Toast.makeText(requireContext(), "Chat has no linked task", Toast.LENGTH_SHORT).show()
             return
         }
 

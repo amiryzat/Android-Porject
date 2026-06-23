@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/campusgo_background">
+
+    <!-- Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="16dp"
+        android:background="@color/campusgo_background"
+        android:elevation="2dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Payment Processing"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/campusgo_text_primary" />
+
+    </LinearLayout>
+
+    <!-- Content area fills remaining height -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Processing container -->
+        <LinearLayout
+            android:id="@+id/containerProcessing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp"
+            android:visibility="visible">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:indeterminateTint="@color/campusgo_primary"
+                android:layout_marginBottom="20dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Processing Payment"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/campusgo_text_primary"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Please wait while we verify your payment."
+                android:textSize="14sp"
+                android:textColor="@color/campusgo_text_secondary"
+                android:gravity="center"
+                android:layout_marginBottom="28dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/campusgo_background"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/campusgo_divider"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Step 1 (active from start) -->
+                    <LinearLayout
+                        android:id="@+id/layoutStep1"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
+
+                        <TextView
+                            android:id="@+id/tvStep1Icon"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="●"
+                            android:textSize="18sp"
+                            android:textColor="@color/campusgo_primary"
+                            android:gravity="center"
+                            android:layout_marginEnd="12dp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Connecting to payment gateway"
+                            android:textSize="14sp"
+                            android:textColor="@color/campusgo_text_primary" />
+
+                    </LinearLayout>
+
+                    <!-- Step 2 (pending) -->
+                    <LinearLayout
+                        android:id="@+id/layoutStep2"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:alpha="0.35">
+
+                        <TextView
+                            android:id="@+id/tvStep2Icon"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="○"
+                            android:textSize="18sp"
+                            android:textColor="@color/campusgo_text_secondary"
+                            android:gravity="center"
+                            android:layout_marginEnd="12dp" />
+
+                        <TextView
+                            android:id="@+id/tvStep2Label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Verifying payment details"
+                            android:textSize="14sp"
+                            android:textColor="@color/campusgo_text_secondary" />
+
+                    </LinearLayout>
+
+                    <!-- Step 3 (pending) -->
+                    <LinearLayout
+                        android:id="@+id/layoutStep3"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:alpha="0.35">
+
+                        <TextView
+                            android:id="@+id/tvStep3Icon"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="○"
+                            android:textSize="18sp"
+                            android:textColor="@color/campusgo_text_secondary"
+                            android:gravity="center"
+                            android:layout_marginEnd="12dp" />
+
+                        <TextView
+                            android:id="@+id/tvStep3Label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Confirming transaction"
+                            android:textSize="14sp"
+                            android:textColor="@color/campusgo_text_secondary" />
+
+                    </LinearLayout>
+
+                    <!-- Step 4 (pending) -->
+                    <LinearLayout
+                        android:id="@+id/layoutStep4"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:alpha="0.35">
+
+                        <TextView
+                            android:id="@+id/tvStep4Icon"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:text="○"
+                            android:textSize="18sp"
+                            android:textColor="@color/campusgo_text_secondary"
+                            android:gravity="center"
+                            android:layout_marginEnd="12dp" />
+
+                        <TextView
+                            android:id="@+id/tvStep4Label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Updating wallet"
+                            android:textSize="14sp"
+                            android:textColor="@color/campusgo_text_secondary" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- Success container (shown after processing completes) -->
+        <LinearLayout
+            android:id="@+id/containerSuccess"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="84dp"
+                android:layout_height="84dp"
+                android:text="✓"
+                android:textSize="40sp"
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:background="@drawable/bg_success_circle"
+                android:layout_marginBottom="24dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Top Up Successful!"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/campusgo_text_primary"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tvSuccessAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textColor="@color/campusgo_text_secondary"
+                android:gravity="center"
+                android:layout_marginBottom="40dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReturnToProfile"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Return to Profile"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/campusgo_primary"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>
