@@ -6,6 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityRegisterBinding
 import com.CampusGO.app.model.User
+import com.CampusGO.app.model.Wallet
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -60,6 +61,15 @@ class RegisterActivity : AppCompatActivity() {
                         .addOnSuccessListener {
                             // Create userStats alongside the user record
                             database.reference.child("userStats").child(uid).setValue(initialStats)
+                            // Create wallet for new user
+                            val wallet = Wallet(
+                                userId = uid,
+                                balance = 0.0,
+                                totalEarned = 0.0,
+                                totalSpent = 0.0,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                            database.reference.child("wallets").child(uid).setValue(wallet)
                             startActivity(
                                 Intent(this, MainActivity::class.java).apply {
                                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

@@ -104,7 +104,12 @@ class FeedFragment : Fragment() {
                     val currentUid = auth.currentUser?.uid
 
                     for (child in snapshot.children) {
-                        val task = child.getValue(Task::class.java) ?: continue
+                        val task = try {
+                            child.getValue(Task::class.java) ?: continue
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Skipping malformed task at key=${child.key}: ${e.message}")
+                            continue
+                        }
 
                         if (task.status == TaskStatus.OPEN && task.posterId != currentUid) {
                             allTasks.add(0, task)

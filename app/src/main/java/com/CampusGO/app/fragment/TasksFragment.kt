@@ -86,7 +86,12 @@ class TasksFragment : Fragment() {
                 acceptedTasks.clear()
                 completedTasks.clear()
                 for (child in snapshot.children) {
-                    val task = child.getValue(Task::class.java) ?: continue
+                    val task = try {
+                        child.getValue(Task::class.java) ?: continue
+                    } catch (e: Exception) {
+                        Log.e("TasksFragment", "Skipping malformed task at key=${child.key}: ${e.message}")
+                        continue
+                    }
                     when {
                         task.posterId == uid && task.status != TaskStatus.COMPLETED && task.status != TaskStatus.CANCELLED ->
                             postedTasks.add(0, task)

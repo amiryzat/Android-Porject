@@ -6,6 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityLoginBinding
 import com.CampusGO.app.model.User
+import com.CampusGO.app.model.Wallet
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -121,6 +122,19 @@ class LoginActivity : AppCompatActivity() {
                             "totalReviews"   to 0
                         )
                     )
+                }
+            }
+            // Ensure wallet exists
+            dbRef.child("wallets").child(uid).get().addOnSuccessListener { walletSnap ->
+                if (!walletSnap.exists()) {
+                    val wallet = Wallet(
+                        userId = uid,
+                        balance = 0.0,
+                        totalEarned = 0.0,
+                        totalSpent = 0.0,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    dbRef.child("wallets").child(uid).setValue(wallet)
                 }
             }
         }
