@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityWalletTopUpBinding
 import com.CampusGO.app.model.Wallet
@@ -23,11 +24,23 @@ class WalletTopUpActivity : AppCompatActivity() {
     private var currentBalance = 0.0
     private var selectedBank = ""
     private var walletListener: ValueEventListener? = null
+    private var returnTo = "PROFILE"
+
+    private val processingLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && returnTo != "PROFILE") {
+            setResult(RESULT_OK)
+            finish()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWalletTopUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        returnTo = intent.getStringExtra("returnTo") ?: "PROFILE"
 
         handleKeyboardInsets(binding.scrollView)
         setupBankPicker()
@@ -163,10 +176,11 @@ class WalletTopUpActivity : AppCompatActivity() {
     }
 
     private fun launchProcessing(amount: Double, method: String, bankName: String) {
-        startActivity(Intent(this, WalletPaymentProcessingActivity::class.java).apply {
+        processingLauncher.launch(Intent(this, WalletPaymentProcessingActivity::class.java).apply {
             putExtra("amount", amount)
             putExtra("paymentMethod", method)
             putExtra("bankName", bankName)
+            putExtra("returnTo", returnTo)
         })
     }
 

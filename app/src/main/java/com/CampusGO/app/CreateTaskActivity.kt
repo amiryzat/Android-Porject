@@ -52,6 +52,16 @@ class CreateTaskActivity : AppCompatActivity() {
         }
     }
 
+    private val topUpLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            binding.btnPost.isEnabled = true
+            binding.btnPost.text = "Post to Feed"
+            android.widget.Toast.makeText(this, "Wallet topped up! Tap Post to continue.", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private var isNegotiable = false
     private var isEmergency = false
 
@@ -344,7 +354,9 @@ class CreateTaskActivity : AppCompatActivity() {
                 "Please top up your wallet first."
             )
             .setPositiveButton("Top Up Wallet") { _, _ ->
-                startActivity(Intent(this, WalletTopUpActivity::class.java))
+                topUpLauncher.launch(Intent(this, WalletTopUpActivity::class.java).apply {
+                    putExtra("returnTo", "CREATE_TASK")
+                })
             }
             .setNegativeButton("Cancel", null)
             .show()

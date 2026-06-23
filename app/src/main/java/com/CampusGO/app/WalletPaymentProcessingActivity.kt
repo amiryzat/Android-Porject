@@ -25,6 +25,7 @@ class WalletPaymentProcessingActivity : AppCompatActivity() {
     private var paymentMethod = ""
     private var bankName = ""
     private var processingComplete = false
+    private var returnTo = "PROFILE"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,12 +35,21 @@ class WalletPaymentProcessingActivity : AppCompatActivity() {
         amount = intent.getDoubleExtra("amount", 0.0)
         paymentMethod = intent.getStringExtra("paymentMethod") ?: "ONLINE_BANKING"
         bankName = intent.getStringExtra("bankName") ?: ""
+        returnTo = intent.getStringExtra("returnTo") ?: "PROFILE"
 
         binding.btnBack.setOnClickListener {
             if (!processingComplete) finish()
         }
 
-        binding.btnReturnToProfile.setOnClickListener { returnToProfile() }
+        binding.btnReturnToProfile.setOnClickListener {
+            when (returnTo) {
+                "CREATE_TASK", "TASK_TRACKING" -> {
+                    setResult(RESULT_OK)
+                    finish()
+                }
+                else -> returnToProfile()
+            }
+        }
 
         startProcessing()
     }

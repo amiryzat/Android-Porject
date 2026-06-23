@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityTaskTrackingBinding
@@ -39,6 +40,14 @@ class TaskTrackingActivity : AppCompatActivity() {
     private var currentTask: Task? = null
     private var posterWalletBalance: Double = 0.0
     private var isPaymentInProgress = false
+
+    private val topUpLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            isPaymentInProgress = false
+        }
+    }
 
     companion object {
         private const val TAG = "TaskTrackingActivity"
@@ -317,7 +326,9 @@ class TaskTrackingActivity : AppCompatActivity() {
                 "Please top up your wallet before confirming completion."
             )
             .setPositiveButton("Top Up Wallet") { _, _ ->
-                startActivity(Intent(this, WalletTopUpActivity::class.java))
+                topUpLauncher.launch(Intent(this, WalletTopUpActivity::class.java).apply {
+                    putExtra("returnTo", "TASK_TRACKING")
+                })
             }
             .setNegativeButton("Cancel", null)
             .show()
