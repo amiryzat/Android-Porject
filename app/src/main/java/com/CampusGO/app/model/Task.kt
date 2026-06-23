@@ -22,7 +22,10 @@ data class Task(
     var runnerId: String = "",
     var runnerName: String = "",
     var agreedPrice: Double = 0.0,
-    var createdAt: Long = 0L
+    var createdAt: Long = 0L,
+    var paymentStatus: String = PaymentStatus.UNPAID,
+    var paymentTransferredAt: Long = 0L,
+    var paymentAmount: Double = 0.0
 )
 
 object TaskStatus {
@@ -32,6 +35,11 @@ object TaskStatus {
     const val DELIVERED = "DELIVERED"
     const val COMPLETED = "COMPLETED"
     const val CANCELLED = "CANCELLED"
+}
+
+object PaymentStatus {
+    const val UNPAID = "UNPAID"
+    const val PAID = "PAID"
 }
 
 object TaskCategory {

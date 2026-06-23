@@ -33,19 +33,59 @@ class WalletTransactionAdapter : RecyclerView.Adapter<WalletTransactionAdapter.V
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val tx = items[position]
 
-        holder.tvDescription.text = tx.description
-        holder.tvDate.text = formatDate(tx.createdAt)
+        when (tx.type) {
+            WalletTransactionType.TOP_UP -> {
+                holder.ivIcon.setImageResource(R.drawable.ic_topup)
+                holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_topup)
+                holder.tvDescription.text = tx.description.ifBlank { "Wallet Top Up" }
+                holder.tvDate.text = formatDate(tx.createdAt)
+                holder.tvAmount.text = "+RM ${String.format("%.2f", tx.amount)}"
+                holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_success))
+            }
 
-        if (tx.type == WalletTransactionType.TOP_UP) {
-            holder.ivIcon.setImageResource(R.drawable.ic_topup)
-            holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_topup)
-            holder.tvAmount.text = "+RM ${String.format("%.2f", tx.amount)}"
-            holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_success))
-        } else {
-            holder.ivIcon.setImageResource(R.drawable.ic_cashout)
-            holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_cashout)
-            holder.tvAmount.text = "-RM ${String.format("%.2f", tx.amount)}"
-            holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_error))
+            WalletTransactionType.CASH_OUT -> {
+                holder.ivIcon.setImageResource(R.drawable.ic_cashout)
+                holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_cashout)
+                holder.tvDescription.text = tx.description.ifBlank { "Cash Out" }
+                holder.tvDate.text = formatDate(tx.createdAt)
+                holder.tvAmount.text = "-RM ${String.format("%.2f", tx.amount)}"
+                holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_error))
+            }
+
+            WalletTransactionType.TASK_PAYMENT_SENT -> {
+                holder.ivIcon.setImageResource(R.drawable.ic_cashout)
+                holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_cashout)
+                holder.tvDescription.text = if (tx.otherUserName.isNotBlank()) {
+                    "Paid ${tx.otherUserName}"
+                } else {
+                    tx.description.ifBlank { "Task Payment Sent" }
+                }
+                holder.tvDate.text = buildSubtitle(tx)
+                holder.tvAmount.text = "-RM ${String.format("%.2f", tx.amount)}"
+                holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_error))
+            }
+
+            WalletTransactionType.TASK_PAYMENT_RECEIVED -> {
+                holder.ivIcon.setImageResource(R.drawable.ic_topup)
+                holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_topup)
+                holder.tvDescription.text = if (tx.otherUserName.isNotBlank()) {
+                    "Received from ${tx.otherUserName}"
+                } else {
+                    tx.description.ifBlank { "Task Payment Received" }
+                }
+                holder.tvDate.text = buildSubtitle(tx)
+                holder.tvAmount.text = "+RM ${String.format("%.2f", tx.amount)}"
+                holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_success))
+            }
+
+            else -> {
+                holder.ivIcon.setImageResource(R.drawable.ic_topup)
+                holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_topup)
+                holder.tvDescription.text = tx.description
+                holder.tvDate.text = formatDate(tx.createdAt)
+                holder.tvAmount.text = "RM ${String.format("%.2f", tx.amount)}"
+                holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_text_primary))
+            }
         }
     }
 
@@ -55,6 +95,12 @@ class WalletTransactionAdapter : RecyclerView.Adapter<WalletTransactionAdapter.V
         items.clear()
         items.addAll(transactions)
         notifyDataSetChanged()
+    }
+
+    private fun buildSubtitle(tx: WalletTransaction): String {
+        val taskPart = tx.taskNumber.takeIf { it.isNotBlank() } ?: ""
+        val datePart = formatDate(tx.createdAt)
+        return if (taskPart.isNotEmpty()) "$taskPart · $datePart" else datePart
     }
 
     private fun formatDate(timestamp: Long): String {
