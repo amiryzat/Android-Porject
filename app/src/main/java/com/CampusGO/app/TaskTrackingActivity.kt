@@ -1,5 +1,8 @@
 package com.CampusGO.app
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Location
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -9,10 +12,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.CampusGO.app.databinding.ActivityTaskTrackingBinding
 import com.CampusGO.app.model.Task
 import com.CampusGO.app.model.TaskStatus
 import com.CampusGO.app.util.ChatIdHelper // CHANGE: Added ChatIdHelper
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -25,6 +31,7 @@ import java.util.Locale
 class TaskTrackingActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTaskTrackingBinding
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance().reference
@@ -37,6 +44,8 @@ class TaskTrackingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         binding = ActivityTaskTrackingBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -379,29 +388,54 @@ class TaskTrackingActivity : AppCompatActivity() {
     }
 
     private fun confirmReceivedAsPoster(task: Task) {
-        AlertDialog.Builder(this)
-            .setTitle("Confirm Receipt")
-            .setMessage("Confirm that you received \"${task.title}\"? This will complete the task and release payment to the runner.")
-            .setPositiveButton("Yes, Received!") { _, _ ->
-                db.child("tasks")
-                    .child(task.id)
-                    .child("status")
-                    .setValue(TaskStatus.COMPLETED)
-                    .addOnSuccessListener {
-                        updateRunnerStats(task)
-                        Toast.makeText(this, "Task completed!", Toast.LENGTH_SHORT).show()
-                        showRateRunnerDialog(task)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Location permission is required to verify proximity.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+            val userLat = loc?.latitude ?: 0.0
+            val userLon = loc?.longitude ?: 0.0
+
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                userLat, userLon,
+                task.dropoffLatitude, task.dropoffLongitude,
+                results
+            )
+            val distanceMeters = results[0]
+
+            if (distanceMeters > 50.0) {
+                Toast.makeText(this, "You must be near the task location to complete this task.", Toast.LENGTH_LONG).show()
+            } else {
+                AlertDialog.Builder(this)
+                    .setTitle("Confirm Receipt")
+                    .setMessage("Confirm that you received \"${task.title}\"? This will complete the task and release payment to the runner.")
+                    .setPositiveButton("Yes, Received!") { _, _ ->
+                        db.child("tasks")
+                            .child(task.id)
+                            .child("status")
+                            .setValue(TaskStatus.COMPLETED)
+                            .addOnSuccessListener {
+                                updateRunnerStats(task)
+                                Toast.makeText(this, "Task completed!", Toast.LENGTH_SHORT).show()
+                                showRateRunnerDialog(task)
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(
+                                    this,
+                                    "Failed to complete task: ${e.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                     }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(
-                            this,
-                            "Failed to complete task: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    .setNegativeButton("Not Yet", null)
+                    .show()
             }
-            .setNegativeButton("Not Yet", null)
-            .show()
+        }.addOnFailureListener {
+            Toast.makeText(this, "Could not verify location for proximity.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun updateRunnerStats(task: Task) {
