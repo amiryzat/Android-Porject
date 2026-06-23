@@ -49,7 +49,6 @@ import kotlinx.coroutines.launch
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 // Wrapper for custom cluster items
 class MapTaskItem(val task: Task) : com.google.maps.android.clustering.ClusterItem {

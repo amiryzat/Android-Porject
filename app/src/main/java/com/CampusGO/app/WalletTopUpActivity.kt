@@ -59,7 +59,11 @@ class WalletTopUpActivity : AppCompatActivity() {
             MalaysianBanks.banks
         )
         binding.etBankSelection.setAdapter(bankAdapter)
-        binding.etBankSelection.threshold = 1
+        binding.etBankSelection.threshold = 0
+        binding.etBankSelection.setOnClickListener { binding.etBankSelection.showDropDown() }
+        binding.etBankSelection.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) binding.etBankSelection.showDropDown()
+        }
 
         binding.etBankSelection.setOnItemClickListener { _, _, position, _ ->
             selectedBank = bankAdapter.getItem(position) ?: ""

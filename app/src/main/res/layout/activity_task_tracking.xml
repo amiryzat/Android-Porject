@@ -257,17 +257,133 @@
                 app:cornerRadius="12dp" />
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnPosterConfirm"
-            style="@style/Widget.Material3.Button"
+        <!-- Payment prompt (shown when DELIVERED + UNPAID, poster only) -->
+        <LinearLayout
+            android:id="@+id/sectionPaymentPrompt"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Confirm Received"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:visibility="gone"
-            app:backgroundTint="@color/campusgo_success"
-            app:cornerRadius="12dp" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/campusgo_background"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/campusgo_divider"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PAYMENT DUE"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:textColor="@color/campusgo_text_secondary"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="6dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Amount"
+                                android:textSize="11sp"
+                                android:textColor="@color/campusgo_text_secondary" />
+                            <TextView
+                                android:id="@+id/tvPaymentAmount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/campusgo_text_primary" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="To Runner"
+                                android:textSize="11sp"
+                                android:textColor="@color/campusgo_text_secondary" />
+                            <TextView
+                                android:id="@+id/tvPaymentRunnerName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/campusgo_text_primary" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvPaymentWalletBalance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/campusgo_text_secondary" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPosterConfirm"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Confirm &amp; Pay"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/campusgo_success"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+
+        <!-- Payment done (shown when COMPLETED + PAID, poster only) -->
+        <LinearLayout
+            android:id="@+id/sectionPaymentDone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvPaymentDoneDetail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/campusgo_success"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

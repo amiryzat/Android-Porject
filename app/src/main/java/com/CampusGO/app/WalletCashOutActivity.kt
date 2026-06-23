@@ -60,7 +60,11 @@ class WalletCashOutActivity : AppCompatActivity() {
             MalaysianBanks.banks
         )
         binding.etBankName.setAdapter(bankAdapter)
-        binding.etBankName.threshold = 1
+        binding.etBankName.threshold = 0
+        binding.etBankName.setOnClickListener { binding.etBankName.showDropDown() }
+        binding.etBankName.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) binding.etBankName.showDropDown()
+        }
 
         binding.etBankName.setOnItemClickListener { _, _, position, _ ->
             selectedBank = bankAdapter.getItem(position) ?: ""

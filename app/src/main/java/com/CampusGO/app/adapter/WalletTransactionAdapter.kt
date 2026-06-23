@@ -36,16 +36,19 @@ class WalletTransactionAdapter : RecyclerView.Adapter<WalletTransactionAdapter.V
         holder.tvDescription.text = tx.description
         holder.tvDate.text = formatDate(tx.createdAt)
 
-        if (tx.type == WalletTransactionType.TOP_UP) {
-            holder.ivIcon.setImageResource(R.drawable.ic_topup)
-            holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_topup)
-            holder.tvAmount.text = "+RM ${String.format("%.2f", tx.amount)}"
-            holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_success))
-        } else {
-            holder.ivIcon.setImageResource(R.drawable.ic_cashout)
-            holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_cashout)
-            holder.tvAmount.text = "-RM ${String.format("%.2f", tx.amount)}"
-            holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_error))
+        when (tx.type) {
+            WalletTransactionType.TOP_UP, WalletTransactionType.TASK_PAYMENT_RECEIVED -> {
+                holder.ivIcon.setImageResource(R.drawable.ic_topup)
+                holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_topup)
+                holder.tvAmount.text = "+RM ${String.format("%.2f", tx.amount)}"
+                holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_success))
+            }
+            else -> {
+                holder.ivIcon.setImageResource(R.drawable.ic_cashout)
+                holder.ivIcon.setBackgroundResource(R.drawable.bg_icon_cashout)
+                holder.tvAmount.text = "-RM ${String.format("%.2f", tx.amount)}"
+                holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.campusgo_error))
+            }
         }
     }
 

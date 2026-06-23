@@ -27,7 +27,10 @@ data class Task(
     var pickupLongitude: Double = 0.0,
     var dropoffLatitude: Double = 0.0,
     var dropoffLongitude: Double = 0.0,
-    var priority: String = TaskPriority.MEDIUM
+    var priority: String = TaskPriority.MEDIUM,
+    var paymentStatus: String = PaymentStatus.UNPAID,
+    var paymentTransferredAt: Long = 0L,
+    var paymentAmount: Double = 0.0
 )
 
 object TaskPriority {
@@ -51,4 +54,9 @@ object TaskCategory {
     const val PARCEL = "PARCEL"
     const val ERRAND = "ERRAND"
     const val OTHER = "OTHER"
+}
+
+object PaymentStatus {
+    const val UNPAID = "UNPAID"
+    const val PAID = "PAID"
 }
