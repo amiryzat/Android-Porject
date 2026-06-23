@@ -22,6 +22,14 @@
         <item name="android:windowFullscreen">false</item>
     </style>
 
+    <style name="Theme.CampusGO.Fullscreen" parent="Theme.CampusGO">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
     <!-- Applied to ChipGroups so child Chips inherit Filter style via ?attr/chipStyle -->
     <style name="ThemeOverlay.CampusGO.FilterChipGroup" parent="">
         <item name="chipStyle">@style/Widget.Material3.Chip.Filter</item>

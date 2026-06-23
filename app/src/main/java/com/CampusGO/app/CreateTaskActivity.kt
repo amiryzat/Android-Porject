@@ -139,6 +139,54 @@ class CreateTaskActivity : AppCompatActivity() {
 
         // Initialize toggle states UI
         updateToggleState()
+
+        // Check for pre-filled data (Repost task flow)
+        if (intent.hasExtra("repostTitle")) {
+            binding.etTitle.setText(intent.getStringExtra("repostTitle"))
+            binding.etDescription.setText(intent.getStringExtra("repostDescription"))
+            val priceVal = intent.getDoubleExtra("repostPrice", 0.0)
+            if (priceVal > 0) {
+                binding.etPrice.setText(String.format(java.util.Locale.US, "%.2f", priceVal))
+            }
+            
+            isNegotiable = intent.getBooleanExtra("repostIsNegotiable", false)
+            isEmergency = intent.getBooleanExtra("repostIsEmergency", false)
+            updateToggleState()
+
+            val cat = intent.getStringExtra("repostCategory")
+            if (cat != null) {
+                val chipId = when (cat) {
+                    TaskCategory.FOOD -> R.id.chipFood
+                    TaskCategory.PRINT -> R.id.chipPrint
+                    TaskCategory.PARCEL -> R.id.chipParcel
+                    TaskCategory.ERRAND -> R.id.chipErrand
+                    else -> R.id.chipFood
+                }
+                binding.chipGroupCategory.check(chipId)
+            }
+
+            if (intent.hasExtra("repostPickupLat")) {
+                pickupLat = intent.getDoubleExtra("repostPickupLat", 0.0)
+                pickupLon = intent.getDoubleExtra("repostPickupLon", 0.0)
+                val fullPickup = intent.getStringExtra("repostPickupAddress") ?: ""
+                val addressPart = fullPickup.substringBefore(" (")
+                val detailsPart = if (fullPickup.contains(" (")) fullPickup.substringAfter(" (").removeSuffix(")") else ""
+                pickupAddress = addressPart
+                binding.etPickupArea.setText(addressPart)
+                binding.etPickup.setText(detailsPart)
+            }
+
+            if (intent.hasExtra("repostDropoffLat")) {
+                dropoffLat = intent.getDoubleExtra("repostDropoffLat", 0.0)
+                dropoffLon = intent.getDoubleExtra("repostDropoffLon", 0.0)
+                val fullDropoff = intent.getStringExtra("repostDropoffAddress") ?: ""
+                val addressPart = fullDropoff.substringBefore(" (")
+                val detailsPart = if (fullDropoff.contains(" (")) fullDropoff.substringAfter(" (").removeSuffix(")") else ""
+                dropoffAddress = addressPart
+                binding.etDropoffArea.setText(addressPart)
+                binding.etDropoff.setText(detailsPart)
+            }
+        }
     }
 
     private fun updateToggleState() {
@@ -251,15 +299,55 @@ class CreateTaskActivity : AppCompatActivity() {
         val category = getSelectedCategory()
         
         binding.btnPost.isEnabled = false
-        binding.btnPost.text = "Posting task..."
+        binding.btnPost.text = "Checking wallet..."
 
         val fullPickup = "$pAddr ($pickupDetails)"
         val fullDropoff = "$dAddr ($dropoffDetails)"
 
-        postTask(
-            title, category, fullPickup, fullDropoff, description, price,
-            pLat, pLon, dLat, dLon
-        )
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            Toast.makeText(this, "You must be signed in to post a task.", Toast.LENGTH_SHORT).show()
+            binding.btnPost.isEnabled = true
+            binding.btnPost.text = "Post to Feed"
+            return
+        }
+
+        db.child("wallets").child(uid).get()
+            .addOnSuccessListener { snapshot ->
+                val wallet = snapshot.getValue(com.CampusGO.app.model.Wallet::class.java)
+                val balance = wallet?.balance ?: 0.0
+                if (balance < price) {
+                    binding.btnPost.isEnabled = true
+                    binding.btnPost.text = "Post to Feed"
+                    showInsufficientBalanceDialog(price, balance)
+                } else {
+                    binding.btnPost.text = "Posting task..."
+                    postTask(
+                        title, category, fullPickup, fullDropoff, description, price,
+                        pLat, pLon, dLat, dLon
+                    )
+                }
+            }
+            .addOnFailureListener {
+                binding.btnPost.isEnabled = true
+                binding.btnPost.text = "Post to Feed"
+                showInsufficientBalanceDialog(price, 0.0)
+            }
+    }
+
+    private fun showInsufficientBalanceDialog(required: Double, current: Double) {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Insufficient Wallet Balance")
+            .setMessage(
+                "You need RM ${String.format(java.util.Locale.US, "%.2f", required)} to post this task.\n" +
+                "Current Balance: RM ${String.format(java.util.Locale.US, "%.2f", current)}\n\n" +
+                "Please top up your wallet first."
+            )
+            .setPositiveButton("Top Up Wallet") { _, _ ->
+                startActivity(Intent(this, WalletTopUpActivity::class.java))
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showModerationError() {

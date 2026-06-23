@@ -23,7 +23,8 @@ class MessageAdapter(
     private val onEditPrice: (Message) -> Unit,
     private val canEditPrice: (Message) -> Boolean,
     private val onRejectPrice: (Message) -> Unit, // ADD THIS
-    private val canRejectPrice: (Message) -> Boolean // ADD THIS
+    private val canRejectPrice: (Message) -> Boolean, // ADD THIS
+    private val onMessageLongClick: (Message) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val messages = mutableListOf<Message>()
@@ -37,11 +38,15 @@ class MessageAdapter(
     inner class SentHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvContent: TextView = view.findViewById(R.id.tvContent)
         val tvTime: TextView = view.findViewById(R.id.tvTime)
+        val ivMedia: android.widget.ImageView = view.findViewById(R.id.ivMedia)
+        val flVideoContainer: android.widget.FrameLayout = view.findViewById(R.id.flVideoContainer)
     }
 
     inner class ReceivedHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvContent: TextView = view.findViewById(R.id.tvContent)
         val tvTime: TextView = view.findViewById(R.id.tvTime)
+        val ivMedia: android.widget.ImageView = view.findViewById(R.id.ivMedia)
+        val flVideoContainer: android.widget.FrameLayout = view.findViewById(R.id.flVideoContainer)
     }
 
     inner class PriceHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -93,17 +98,77 @@ class MessageAdapter(
 
         when (holder) {
             is SentHolder -> {
-                holder.tvContent.text = msg.content
+                bindMediaOrText(msg, holder.tvContent, holder.ivMedia, holder.flVideoContainer)
                 holder.tvTime.text = timeStr
+                holder.itemView.setOnLongClickListener {
+                    onMessageLongClick(msg)
+                    true
+                }
             }
 
             is ReceivedHolder -> {
-                holder.tvContent.text = msg.content
+                bindMediaOrText(msg, holder.tvContent, holder.ivMedia, holder.flVideoContainer)
                 holder.tvTime.text = timeStr
+                holder.itemView.setOnLongClickListener {
+                    onMessageLongClick(msg)
+                    true
+                }
             }
 
             is PriceHolder -> {
                 bindPriceMessage(holder, msg, timeStr)
+            }
+        }
+    }
+
+    private fun bindMediaOrText(
+        msg: Message,
+        tvContent: TextView,
+        ivMedia: android.widget.ImageView,
+        flVideoContainer: android.widget.FrameLayout
+    ) {
+        tvContent.visibility = View.GONE
+        ivMedia.visibility = View.GONE
+        flVideoContainer.visibility = View.GONE
+
+        when (msg.type) {
+            MessageType.IMAGE -> {
+                ivMedia.visibility = View.VISIBLE
+                try {
+                    val decodedBytes = android.util.Base64.decode(msg.content, android.util.Base64.DEFAULT)
+                    val bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                    if (bitmap != null) {
+                        ivMedia.setImageBitmap(bitmap)
+                    } else {
+                        ivMedia.setImageResource(android.R.drawable.ic_menu_gallery)
+                    }
+                } catch (e: Exception) {
+                    ivMedia.setImageResource(android.R.drawable.ic_menu_gallery)
+                }
+
+                ivMedia.setOnClickListener {
+                    val context = it.context
+                    val intent = android.content.Intent(context, com.CampusGO.app.FullscreenMediaActivity::class.java).apply {
+                        putExtra("MEDIA_TYPE", "IMAGE")
+                        putExtra("MEDIA_CONTENT", msg.content)
+                    }
+                    context.startActivity(intent)
+                }
+            }
+            MessageType.VIDEO -> {
+                flVideoContainer.visibility = View.VISIBLE
+                flVideoContainer.setOnClickListener {
+                    val context = it.context
+                    val intent = android.content.Intent(context, com.CampusGO.app.FullscreenMediaActivity::class.java).apply {
+                        putExtra("MEDIA_TYPE", "VIDEO")
+                        putExtra("MEDIA_CONTENT", msg.content)
+                    }
+                    context.startActivity(intent)
+                }
+            }
+            else -> {
+                tvContent.visibility = View.VISIBLE
+                tvContent.text = msg.content
             }
         }
     }

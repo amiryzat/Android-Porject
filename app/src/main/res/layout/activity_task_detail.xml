@@ -177,13 +177,13 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Details card -->
+            <!-- Details card with Embedded Google Map -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 app:cardBackgroundColor="@color/campusgo_background"
-                app:cardCornerRadius="10dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/campusgo_divider"
                 app:strokeWidth="1dp">
@@ -191,38 +191,136 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:orientation="vertical">
 
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Pickup" android:textSize="13sp" android:textColor="@color/campusgo_text_secondary" />
-                        <TextView android:id="@+id/tvPickup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textStyle="bold" android:textColor="@color/campusgo_text_primary" />
-                    </LinearLayout>
+                    <!-- Embedded Map Container -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
 
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Drop-off" android:textSize="13sp" android:textColor="@color/campusgo_text_secondary" />
-                        <TextView android:id="@+id/tvDropoff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textStyle="bold" android:textColor="@color/campusgo_text_primary" />
-                    </LinearLayout>
+                        <com.google.android.gms.maps.MapView
+                            android:id="@+id/mapView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/campusgo_divider" android:layout_marginBottom="12dp" />
+                    </com.google.android.material.card.MaterialCardView>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="DESCRIPTION"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.08"
-                        android:textColor="@color/campusgo_text_secondary"
-                        android:layout_marginBottom="6dp" />
-
-                    <TextView
-                        android:id="@+id/tvDescription"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/campusgo_text_primary"
-                        android:lineSpacingMultiplier="1.4" />
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Pickup Row -->
+                        <LinearLayout
+                            android:id="@+id/llPickupRow"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingVertical="6dp"
+                            android:paddingHorizontal="4dp"
+                            android:layout_marginBottom="6dp">
+
+                            <View
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@drawable/bg_success_circle"
+                                android:backgroundTint="@color/campusgo_success" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="PICKUP:"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/campusgo_text_secondary"
+                                android:layout_marginStart="8dp" />
+
+                            <TextView
+                                android:id="@+id/tvPickup"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="13sp"
+                                android:textColor="@color/campusgo_text_primary"
+                                android:layout_marginStart="6dp"
+                                android:ellipsize="end"
+                                android:maxLines="2" />
+                        </LinearLayout>
+
+                        <!-- Drop-off Row -->
+                        <LinearLayout
+                            android:id="@+id/llDropoffRow"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingVertical="6dp"
+                            android:paddingHorizontal="4dp"
+                            android:layout_marginBottom="8dp">
+
+                            <View
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@drawable/bg_success_circle"
+                                android:backgroundTint="@color/campusgo_error" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="DROPOFF:"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/campusgo_text_secondary"
+                                android:layout_marginStart="8dp" />
+
+                            <TextView
+                                android:id="@+id/tvDropoff"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="13sp"
+                                android:textColor="@color/campusgo_text_primary"
+                                android:layout_marginStart="6dp"
+                                android:ellipsize="end"
+                                android:maxLines="2" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/campusgo_divider"
+                            android:layout_marginBottom="12dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="DESCRIPTION"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.08"
+                            android:textColor="@color/campusgo_text_secondary"
+                            android:layout_marginBottom="6dp" />
+
+                        <TextView
+                            android:id="@+id/tvDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="14sp"
+                            android:textColor="@color/campusgo_text_primary"
+                            android:lineSpacingMultiplier="1.3" />
+
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

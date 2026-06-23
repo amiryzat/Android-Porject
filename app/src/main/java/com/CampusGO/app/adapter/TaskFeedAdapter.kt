@@ -14,8 +14,11 @@ import java.util.concurrent.TimeUnit
 class TaskFeedAdapter(
     private var tasks: List<Task>,
     private val onAccept: (Task) -> Unit,
-    private val onChat: (Task) -> Unit
+    private val onChat: (Task) -> Unit,
+    private val onItemClick: ((Task) -> Unit)? = null
 ) : RecyclerView.Adapter<TaskFeedAdapter.ViewHolder>() {
+
+    private val userCache = HashMap<String, com.CampusGO.app.model.User>()
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvAvatar: TextView = view.findViewById(R.id.tvAvatar)
@@ -26,7 +29,6 @@ class TaskFeedAdapter(
         val tvCategory: TextView = view.findViewById(R.id.tvCategory)
         val tvTitle: TextView = view.findViewById(R.id.tvTitle)
         val tvDescription: TextView = view.findViewById(R.id.tvDescription)
-        val tvRoute: TextView = view.findViewById(R.id.tvRoute)
         val tvPrice: TextView = view.findViewById(R.id.tvPrice)
         val tvNegotiable: TextView = view.findViewById(R.id.tvNegotiable)
         val btnChat: MaterialButton = view.findViewById(R.id.btnChat)
@@ -41,13 +43,29 @@ class TaskFeedAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val task = tasks[position]
 
-        holder.tvAvatar.text = task.posterName.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+        val posterId = task.posterId
+        val db = com.google.firebase.database.FirebaseDatabase.getInstance().reference
+        val cachedUser = userCache[posterId]
+        if (cachedUser != null) {
+            com.CampusGO.app.utils.AvatarHelper.setAvatar(holder.tvAvatar, task.posterName, cachedUser.profilePicture)
+        } else {
+            com.CampusGO.app.utils.AvatarHelper.setAvatar(holder.tvAvatar, task.posterName, null)
+            db.child("users").child(posterId).addListenerForSingleValueEvent(object : com.google.firebase.database.ValueEventListener {
+                override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    val user = snapshot.getValue(com.CampusGO.app.model.User::class.java)
+                    if (user != null) {
+                        userCache[posterId] = user
+                        com.CampusGO.app.utils.AvatarHelper.setAvatar(holder.tvAvatar, task.posterName, user.profilePicture)
+                    }
+                }
+                override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+            })
+        }
         holder.tvPosterName.text = task.posterName
         holder.tvRating.text = "★ ${task.posterRating} · ${formatTime(task.createdAt)}"
         holder.tvTimePosted.text = formatAgo(task.createdAt)
         holder.tvTitle.text = task.title
         holder.tvDescription.text = task.description.ifEmpty { "No description provided." }
-        holder.tvRoute.text = "OFFER · ${task.pickup} → ${task.dropoff}"
         holder.tvPrice.text = "RM ${String.format("%.2f", task.price)}"
         holder.tvCategory.text = task.category
         holder.tvNegotiable.visibility = if (task.isNegotiable) View.VISIBLE else View.GONE
@@ -56,6 +74,9 @@ class TaskFeedAdapter(
         holder.btnAccept.text = "Accept"
         holder.btnAccept.setOnClickListener { onAccept(task) }
         holder.btnChat.setOnClickListener { onChat(task) }
+
+        // Make whole card clickable for task detail navigation
+        holder.itemView.setOnClickListener { onItemClick?.invoke(task) }
     }
 
     override fun getItemCount() = tasks.size

@@ -179,37 +179,72 @@ class ConfirmAcceptActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                val isNegotiatedPrice = abs(finalPrice - latestTask.price) > 0.001
-
-                if (isNegotiatedPrice) {
-                    // CHANGE:
-                    // If price is negotiated, it must come from a real chat.
-                    if (chatIdFromIntent.isNullOrBlank()) {
-                        failConfirm("Negotiated chat record is missing")
-                        return@addOnSuccessListener
+                // Check poster's wallet balance
+                db.child("wallets").child(latestTask.posterId).get()
+                    .addOnSuccessListener { walletSnap ->
+                        val wallet = walletSnap.getValue(com.CampusGO.app.model.Wallet::class.java)
+                        val balance = wallet?.balance ?: 0.0
+                        if (balance < finalPrice) {
+                            failConfirm("Poster's wallet balance is insufficient")
+                            showInsufficientPosterBalanceDialog(latestTask.posterName, finalPrice)
+                        } else {
+                            continueAcceptFlow(latestTask, finalPrice, chatIdFromIntent, uid, runnerName)
+                        }
                     }
-
-                    verifyNegotiatedPrice(
-                        task = latestTask,
-                        finalPrice = finalPrice,
-                        chatId = chatIdFromIntent,
-                        runnerId = uid,
-                        runnerName = runnerName
-                    )
-                } else {
-                    performAccept(
-                        task = latestTask,
-                        finalPrice = finalPrice,
-                        chatIdFromIntent = chatIdFromIntent,
-                        runnerId = uid,
-                        runnerName = runnerName
-                    )
-                }
+                    .addOnFailureListener { e ->
+                        failConfirm("Failed to verify poster wallet: ${e.message}")
+                    }
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to recheck task", e)
                 failConfirm("Failed to accept task: ${e.message}")
             }
+    }
+
+    private fun continueAcceptFlow(
+        latestTask: Task,
+        finalPrice: Double,
+        chatIdFromIntent: String?,
+        uid: String,
+        runnerName: String
+    ) {
+        val isNegotiatedPrice = abs(finalPrice - latestTask.price) > 0.001
+
+        if (isNegotiatedPrice) {
+            // CHANGE:
+            // If price is negotiated, it must come from a real chat.
+            if (chatIdFromIntent.isNullOrBlank()) {
+                failConfirm("Negotiated chat record is missing")
+                return
+            }
+
+            verifyNegotiatedPrice(
+                task = latestTask,
+                finalPrice = finalPrice,
+                chatId = chatIdFromIntent,
+                runnerId = uid,
+                runnerName = runnerName
+            )
+        } else {
+            performAccept(
+                task = latestTask,
+                finalPrice = finalPrice,
+                chatIdFromIntent = chatIdFromIntent,
+                runnerId = uid,
+                runnerName = runnerName
+            )
+        }
+    }
+
+    private fun showInsufficientPosterBalanceDialog(posterName: String, price: Double) {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Poster Balance Insufficient")
+            .setMessage(
+                "The task poster ($posterName) does not currently have enough balance in their CampusGO Wallet to cover the agreed price of RM ${String.format(java.util.Locale.US, "%.2f", price)}.\n\n" +
+                "To protect your payment, please notify the poster via chat to top up their wallet before you accept this task."
+            )
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     private fun verifyNegotiatedPrice(
@@ -346,6 +381,15 @@ class ConfirmAcceptActivity : AppCompatActivity() {
             .updateChildren(chatUpdate)
             .addOnSuccessListener {
                 Toast.makeText(this, "Task accepted! Good luck, runner!", Toast.LENGTH_LONG).show()
+
+                NotificationHelper.sendNotificationToUser(
+                    receiverUserId = task.posterId,
+                    title = "Task Accepted! 🚀",
+                    body = "$runnerName accepted your task: ${task.title}",
+                    type = "TASK_STATUS",
+                    taskId = task.id,
+                    chatId = chatId
+                )
 
                 startActivity(Intent(this, TaskTrackingActivity::class.java).apply {
                     putExtra("taskId", task.id)

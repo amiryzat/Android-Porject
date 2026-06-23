@@ -19,6 +19,8 @@ object MessageType {
     const val PRICE_OFFER = "PRICE_OFFER"
     const val PRICE_AGREED = "PRICE_AGREED"
     const val SYSTEM = "SYSTEM"
+    const val IMAGE = "IMAGE"
+    const val VIDEO = "VIDEO"
 }
 
 object PriceStatus {

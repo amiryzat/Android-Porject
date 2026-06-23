@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.CampusGO.app.LoginActivity
+import com.CampusGO.app.ManageProfileActivity
 import com.CampusGO.app.WalletCashOutActivity
 import com.CampusGO.app.WalletTopUpActivity
 import com.CampusGO.app.adapter.WalletTransactionAdapter
@@ -16,6 +17,7 @@ import com.CampusGO.app.databinding.FragmentProfileBinding
 import com.CampusGO.app.model.User
 import com.CampusGO.app.model.Wallet
 import com.CampusGO.app.model.WalletTransaction
+import com.CampusGO.app.utils.AvatarHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -32,6 +34,7 @@ class ProfileFragment : Fragment() {
 
     private lateinit var transactionAdapter: WalletTransactionAdapter
 
+    private var userListener: ValueEventListener? = null
     private var walletListener: ValueEventListener? = null
     private var transactionListener: ValueEventListener? = null
 
@@ -66,16 +69,21 @@ class ProfileFragment : Fragment() {
         binding.tvCompleted.text = "0"
         binding.tvPosted.text = "0"
 
-        db.child("users").child(uid)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+        // Listen for user changes in database in real-time
+        userListener = db.child("users").child(uid)
+            .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!isAdded) return
                     val user = snapshot.getValue(User::class.java)
                     if (user != null && user.fullName.isNotEmpty()) {
-                        binding.tvAvatarLarge.text =
-                            user.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
                         binding.tvFullName.text = user.fullName
                         binding.tvEmail.text = user.email
+                        AvatarHelper.setAvatar(
+                            imageView = binding.ivProfilePicture,
+                            name = user.fullName,
+                            base64Str = user.profilePicture,
+                            fallbackTextView = binding.tvAvatarLarge
+                        )
                     } else {
                         Log.w(TAG, "No /users/$uid record — creating from Auth data")
                         val newUser = User(
@@ -113,6 +121,100 @@ class ProfileFragment : Fragment() {
         ensureWalletExists(uid)
         listenWallet(uid)
         listenTransactions(uid)
+
+        // Account actions click listeners
+        binding.rowManageProfile.setOnClickListener {
+            startActivity(Intent(requireContext(), ManageProfileActivity::class.java))
+        }
+
+        binding.rowPasswordSecurity.setOnClickListener {
+            startActivity(Intent(requireContext(), ManageProfileActivity::class.java).apply {
+                putExtra("focusPassword", true)
+            })
+        }
+
+        // Notification toggle
+        val prefs = requireContext().getSharedPreferences("CampusGO_Prefs", android.content.Context.MODE_PRIVATE)
+        binding.switchNotifications.isChecked = prefs.getBoolean("notifications_enabled", true)
+        binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("notifications_enabled", isChecked).apply()
+            val msg = if (isChecked) "Notifications enabled" else "Notifications muted"
+            android.widget.Toast.makeText(requireContext(), msg, android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        // Initial setup for language and theme labels
+        val config = resources.configuration
+        val activeLocale = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            config.locales[0]
+        } else {
+            @Suppress("DEPRECATION")
+            config.locale
+        }
+        val currentLocaleTag = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales().toLanguageTags()
+        val isSystemMalay = activeLocale.language == "ms"
+        val activeLang = if (currentLocaleTag.startsWith("ms") || (currentLocaleTag.isEmpty() && isSystemMalay)) "Malay" else "English"
+        binding.tvLanguageStatus.text = activeLang
+
+        val currentTheme = prefs.getString("theme_display", "Light") ?: "Light"
+        binding.tvThemeStatus.text = currentTheme
+
+        binding.rowLanguage.setOnClickListener {
+            val languages = arrayOf("English", "Malay")
+            val isMalay = binding.tvLanguageStatus.text == "Malay"
+            val currentSelected = if (isMalay) 1 else 0
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Select Language")
+                .setSingleChoiceItems(languages, currentSelected) { dialog, which ->
+                    val selectedLang = languages[which]
+                    prefs.edit().putString("language", selectedLang).apply()
+                    binding.tvLanguageStatus.text = selectedLang
+                    
+                    val localeTag = if (which == 1) "ms" else "en"
+                    val localeList = androidx.core.os.LocaleListCompat.forLanguageTags(localeTag)
+                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(localeList)
+                    
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
+        // Preference actions click listeners
+        binding.rowTheme.setOnClickListener {
+            val themes = arrayOf("Light Theme", "Dark Theme", "System Default")
+            val themeValues = arrayOf("light", "dark", "system")
+            val currentThemeVal = prefs.getString("theme", "light") ?: "light"
+            val currentSelected = themeValues.indexOf(currentThemeVal).coerceAtLeast(0)
+            
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Select Theme")
+                .setSingleChoiceItems(themes, currentSelected) { dialog, which ->
+                    val selectedThemeVal = themeValues[which]
+                    val selectedThemeDisplay = themes[which].substringBefore(" Theme").substringBefore(" Default")
+                    prefs.edit().apply {
+                        putString("theme", selectedThemeVal)
+                        putString("theme_display", selectedThemeDisplay)
+                        apply()
+                    }
+                    binding.tvThemeStatus.text = selectedThemeDisplay
+                    
+                    val mode = when (selectedThemeVal) {
+                        "light" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+                        "dark" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+                        else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                    }
+                    androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(mode)
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
+        binding.rowAboutUs.setOnClickListener {
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("About CampusGO")
+                .setMessage("CampusGO v1.0.0\n\nA modern and secure campus runner platform connecting student task posters with runner peers to solve logistics and task demands seamlessly.\n\nDeveloped with care for university campus environments.")
+                .setPositiveButton("Close") { dialog, _ -> dialog.dismiss() }
+                .show()
+        }
 
         binding.btnTopUp.setOnClickListener {
             startActivity(Intent(requireContext(), WalletTopUpActivity::class.java))
@@ -221,6 +323,7 @@ class ProfileFragment : Fragment() {
         super.onDestroyView()
         val uid = auth.currentUser?.uid
         if (uid != null) {
+            userListener?.let { db.child("users").child(uid).removeEventListener(it) }
             walletListener?.let { db.child("wallets").child(uid).removeEventListener(it) }
             transactionListener?.let {
                 db.child("walletTransactions").child(uid).removeEventListener(it)

@@ -369,7 +369,24 @@ class TaskTrackingActivity : AppCompatActivity() {
                             Toast.makeText(this, "Failed to create chat: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 } else {
-                    openChatActivity(task.id, chatId)
+                    val existingTaskId = snap.child("taskId").getValue(String::class.java)
+                    if (existingTaskId != task.id) {
+                        db.child("chats").child(chatId).updateChildren(
+                            mapOf(
+                                "taskId" to task.id,
+                                "taskTitle" to task.title,
+                                "taskNumber" to task.taskNumber,
+                                "finalPrice" to if (task.agreedPrice > 0) task.agreedPrice else 0.0
+                            )
+                        ).addOnSuccessListener {
+                            openChatActivity(task.id, chatId)
+                        }.addOnFailureListener { e ->
+                            Log.e(TAG, "Failed to update chat details for tracking", e)
+                            openChatActivity(task.id, chatId)
+                        }
+                    } else {
+                        openChatActivity(task.id, chatId)
+                    }
                 }
             }
             .addOnFailureListener { e ->
@@ -436,15 +453,34 @@ class TaskTrackingActivity : AppCompatActivity() {
     }
 
     private fun updateParticipants(task: Task) {
-        binding.tvPosterAvatar.text = task.posterName.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+        // Fetch Poster Avatar
+        db.child("users").child(task.posterId).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val user = snapshot.getValue(com.CampusGO.app.model.User::class.java)
+                com.CampusGO.app.utils.AvatarHelper.setAvatar(binding.tvPosterAvatar, task.posterName, user?.profilePicture)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                com.CampusGO.app.utils.AvatarHelper.setAvatar(binding.tvPosterAvatar, task.posterName, null)
+            }
+        })
         binding.tvPosterName.text = task.posterName
         binding.tvPosterRating.text = "★ ${task.posterRating}"
 
         if (task.runnerId.isNotEmpty()) {
-            binding.tvRunnerAvatar.text = task.runnerName.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+            db.child("users").child(task.runnerId).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val user = snapshot.getValue(com.CampusGO.app.model.User::class.java)
+                    com.CampusGO.app.utils.AvatarHelper.setAvatar(binding.tvRunnerAvatar, task.runnerName, user?.profilePicture)
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    com.CampusGO.app.utils.AvatarHelper.setAvatar(binding.tvRunnerAvatar, task.runnerName, null)
+                }
+            })
             binding.tvRunnerName.text = task.runnerName
         } else {
             binding.tvRunnerName.text = "Waiting for runner..."
+            binding.tvRunnerAvatar.text = "?"
+            binding.tvRunnerAvatar.setBackgroundResource(R.drawable.bg_avatar)
         }
     }
 

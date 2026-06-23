@@ -31,19 +31,19 @@
             android:layout_marginStart="4dp">
 
             <TextView
+                android:id="@+id/tvTaskRef"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10dp"
+                android:textColor="@color/campusgo_text_secondary" />
+
+            <TextView
                 android:id="@+id/tvOtherName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/campusgo_text_primary" />
-
-            <TextView
-                android:id="@+id/tvTaskRef"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textColor="@color/campusgo_text_secondary" />
         </LinearLayout>
 
     </LinearLayout>
@@ -83,6 +83,263 @@
 
     </LinearLayout>
 
+    <!-- Task Progress Tracker (5-Step Animating View) -->
+    <LinearLayout
+        android:id="@+id/llTaskProgressCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white"
+        android:padding="12dp"
+        android:elevation="2dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Task Status: "
+                android:textSize="12sp"
+                android:textColor="@color/campusgo_text_secondary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvProgressStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="POSTED"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/campusgo_primary" />
+        </LinearLayout>
+
+        <!-- Horizontal Steps and Animating Lines -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="4dp">
+
+            <!-- Step 1: Posted -->
+            <TextView
+                android:id="@+id/dotPosted"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/bg_status_completed"
+                android:gravity="center"
+                android:text="✓"
+                android:textColor="@android:color/white"
+                android:textSize="10sp" />
+
+            <!-- Connecting Line 1 -->
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/line1"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                app:indicatorColor="@color/campusgo_primary"
+                app:trackColor="@color/campusgo_divider" />
+
+            <!-- Step 2: Accepted -->
+            <TextView
+                android:id="@+id/dotAccepted"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/bg_avatar"
+                android:gravity="center"
+                android:text="2"
+                android:textColor="@color/campusgo_text_secondary"
+                android:textSize="10sp" />
+
+            <!-- Connecting Line 2 -->
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/line2"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                app:indicatorColor="@color/campusgo_primary"
+                app:trackColor="@color/campusgo_divider" />
+
+            <!-- Step 3: On The Way -->
+            <TextView
+                android:id="@+id/dotOnTheWay"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/bg_avatar"
+                android:gravity="center"
+                android:text="3"
+                android:textColor="@color/campusgo_text_secondary"
+                android:textSize="10sp" />
+
+            <!-- Connecting Line 3 -->
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/line3"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                app:indicatorColor="@color/campusgo_primary"
+                app:trackColor="@color/campusgo_divider" />
+
+            <!-- Step 4: Delivered -->
+            <TextView
+                android:id="@+id/dotDelivered"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/bg_avatar"
+                android:gravity="center"
+                android:text="4"
+                android:textColor="@color/campusgo_text_secondary"
+                android:textSize="10sp" />
+
+            <!-- Connecting Line 4 -->
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/line4"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                app:indicatorColor="@color/campusgo_primary"
+                app:trackColor="@color/campusgo_divider" />
+
+            <!-- Step 5: Confirmed -->
+            <TextView
+                android:id="@+id/dotCompleted"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/bg_avatar"
+                android:gravity="center"
+                android:text="5"
+                android:textColor="@color/campusgo_text_secondary"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Horizontal Labels -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/lblPosted"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Posted"
+                android:textSize="9sp"
+                android:textColor="@color/campusgo_text_secondary" />
+
+            <TextView
+                android:id="@+id/lblAccepted"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Accepted"
+                android:textSize="9sp"
+                android:textColor="@color/campusgo_text_hint" />
+
+            <TextView
+                android:id="@+id/lblOnTheWay"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="On Way"
+                android:textSize="9sp"
+                android:textColor="@color/campusgo_text_hint" />
+
+            <TextView
+                android:id="@+id/lblDelivered"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Delivered"
+                android:textSize="9sp"
+                android:textColor="@color/campusgo_text_hint" />
+
+            <TextView
+                android:id="@+id/lblCompleted"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Done"
+                android:textSize="9sp"
+                android:textColor="@color/campusgo_text_hint" />
+        </LinearLayout>
+
+        <!-- Runner Interaction Buttons -->
+        <LinearLayout
+            android:id="@+id/llRunnerProgressActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnProgressIssue"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="Having Issue?"
+                android:textSize="11sp"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="8dp"
+                app:strokeColor="@color/campusgo_error"
+                android:textColor="@color/campusgo_error"
+                app:cornerRadius="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNextProgress"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:text="Next Step"
+                android:textSize="11sp"
+                android:paddingHorizontal="10dp"
+                app:backgroundTint="@color/campusgo_primary"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
+
+        <!-- Poster Interaction Buttons -->
+        <LinearLayout
+            android:id="@+id/llPosterProgressActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelRunner"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:text="Cancel &amp; Remove Runner"
+                android:textSize="11sp"
+                android:paddingHorizontal="10dp"
+                app:strokeColor="@color/campusgo_error"
+                android:textColor="@color/campusgo_error"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMessages"
         android:layout_width="match_parent"
@@ -113,6 +370,19 @@
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:text="$"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="0dp"
+                android:layout_marginEnd="8dp"
+                app:strokeColor="@color/campusgo_divider"
+                app:cornerRadius="22dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAttach"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:text="+"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:padding="0dp"

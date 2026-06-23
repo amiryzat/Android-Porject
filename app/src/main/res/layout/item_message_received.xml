@@ -23,6 +23,35 @@
             android:textColor="@color/campusgo_text_primary"
             android:lineSpacingMultiplier="1.3" />
 
+        <ImageView
+            android:id="@+id/ivMedia"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_chat_bubble_received"
+            android:padding="2dp"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/flVideoContainer"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:background="@drawable/bg_chat_bubble_received"
+            android:padding="2dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/ivVideoThumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery" />
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_media_play" />
+        </FrameLayout>
+
         <TextView
             android:id="@+id/tvTime"
             android:layout_width="wrap_content"

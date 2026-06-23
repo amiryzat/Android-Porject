@@ -99,6 +99,9 @@ class FeedFragment : Fragment() {
             },
             onChat = { task ->
                 openChat(task)
+            },
+            onItemClick = { task ->
+                openTaskDetail(task)
             }
         )
 
@@ -224,6 +227,8 @@ class FeedFragment : Fragment() {
         startActivity(Intent(requireContext(), TaskDetailActivity::class.java).apply {
             putExtra("taskId", task.id)
         })
+        @Suppress("DEPRECATION")
+        requireActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
 
     private fun openChat(task: Task) {
@@ -326,7 +331,26 @@ class FeedFragment : Fragment() {
                         }
                 } else {
                     Log.d(TAG, "Chat already exists: $chatId")
-                    openChatActivity(task.id, chatId)
+                    val existingTaskId = snap.child("taskId").getValue(String::class.java)
+                    if (existingTaskId != task.id) {
+                        db.child("chats").child(chatId).updateChildren(
+                            mapOf(
+                                "taskId" to task.id,
+                                "taskTitle" to task.title,
+                                "taskNumber" to task.taskNumber,
+                                "finalPrice" to 0.0,
+                                "lastMessage" to "Negotiating task ${task.taskNumber}",
+                                "lastMessageTime" to System.currentTimeMillis()
+                            )
+                        ).addOnSuccessListener {
+                            openChatActivity(task.id, chatId)
+                        }.addOnFailureListener { e ->
+                            Log.e(TAG, "Failed to update chat details for new task", e)
+                            openChatActivity(task.id, chatId)
+                        }
+                    } else {
+                        openChatActivity(task.id, chatId)
+                    }
                 }
             }
             .addOnFailureListener { e ->

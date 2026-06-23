@@ -8,6 +8,7 @@ import android.location.Location
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,8 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,11 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.CampusGO.app.ChatActivity
+import com.CampusGO.app.R
 import com.CampusGO.app.TaskTrackingActivity
 import com.CampusGO.app.model.Task
 import com.CampusGO.app.model.TaskCategory
@@ -41,6 +44,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.maps.android.compose.*
@@ -49,7 +53,6 @@ import kotlinx.coroutines.launch
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 // Wrapper for custom cluster items
 class MapTaskItem(val task: Task) : com.google.maps.android.clustering.ClusterItem {
@@ -58,6 +61,91 @@ class MapTaskItem(val task: Task) : com.google.maps.android.clustering.ClusterIt
     override fun getSnippet(): String = task.description
     override fun getZIndex(): Float? = null
 }
+
+private const val DARK_MAP_STYLE_JSON = """
+[
+  {
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#1e293b" }
+    ]
+  },
+  {
+    "elementType": "labels.icon",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      { "color": "#94a3b8" }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      { "color": "#0f172a" }
+    ]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#475569" }
+    ]
+  },
+  {
+    "featureType": "landscape",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#0f172a" }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#1e293b" }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      { "color": "#cbd5e1" }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.fill",
+    "stylers": [
+      { "color": "#334155" }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      { "color": "#94a3b8" }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#475569" }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#020617" }
+    ]
+  }
+]
+"""
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -153,10 +241,36 @@ fun CampusMapScreen(
     var isHeatmapEnabled by remember { mutableStateOf(false) }
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
-    // Filter logic
-    val filteredTasks = remember(tasks, selectedFilter, userLocation) {
-        val base = tasks.filter { it.status == TaskStatus.OPEN }
+    // Read saved theme to set dark styled maps JSON automatically
+    val prefs = remember { context.getSharedPreferences("CampusGO_Prefs", Context.MODE_PRIVATE) }
+    val savedTheme = prefs.getString("theme", "light") ?: "light"
+    val isDarkTheme = when (savedTheme) {
+        "dark" -> true
+        "light" -> false
+        else -> androidx.compose.foundation.isSystemInDarkTheme()
+    }
+    
+    val mapStyleOptions = remember(isDarkTheme) {
+        if (isDarkTheme) MapStyleOptions(DARK_MAP_STYLE_JSON) else null
+    }
+
+    // Filter and search logic combined
+    val filteredTasks = remember(tasks, selectedFilter, searchQuery, userLocation) {
+        var base = tasks.filter { it.status == TaskStatus.OPEN }
+        
+        // Apply search query
+        if (searchQuery.isNotBlank()) {
+            base = base.filter {
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                it.description.contains(searchQuery, ignoreCase = true) ||
+                it.pickup.contains(searchQuery, ignoreCase = true) ||
+                it.dropoff.contains(searchQuery, ignoreCase = true) ||
+                it.category.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
         when (selectedFilter) {
             "Emergency" -> base.filter { it.isEmergency }
             "High Reward" -> base.filter { it.price >= 15.0 }
@@ -183,12 +297,17 @@ fun CampusMapScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // declarative map wrapper
+        // Declarative map wrapper
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            properties = MapProperties(isMyLocationEnabled = locationPermissionGranted),
-            uiSettings = MapUiSettings(myLocationButtonEnabled = locationPermissionGranted)
+            properties = MapProperties(
+                isMyLocationEnabled = locationPermissionGranted,
+                mapStyleOptions = mapStyleOptions
+            ),
+            uiSettings = MapUiSettings(
+                myLocationButtonEnabled = false // Custom action FAB button handles this for a premium look
+            )
         ) {
             if (isHeatmapEnabled && filteredTasks.isNotEmpty()) {
                 val locations = filteredTasks.map { LatLng(it.pickupLatitude, it.pickupLongitude) }
@@ -260,20 +379,87 @@ fun CampusMapScreen(
             }
         }
 
-        // Overlay Filters panel
+        // Overlay Panel: Search Bar, Options, and Filters
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
                 .align(Alignment.TopCenter)
         ) {
+            // Google Maps-style Floating Search Bar (Lecturer Impressing UI)
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) Color(0xFF1e293b) else Color.White
+                ),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(28.dp)),
+                border = BorderStroke(1.dp, if (isDarkTheme) Color(0xFF334155) else Color(0xFFE2E8F0))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search icon",
+                        tint = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B),
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { 
+                            Text(
+                                text = "Search tasks, food, errands...", 
+                                fontSize = 14.sp,
+                                color = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+                            ) 
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            focusedTextColor = if (isDarkTheme) Color.White else Color(0xFF0F172A),
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color(0xFF0F172A)
+                        ),
+                        singleLine = true
+                    )
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(
+                            onClick = { searchQuery = "" },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear search",
+                                tint = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+                            )
+                        }
+                    }
+                }
+            }
+
             // Heatmap / Markers Switch Card
             Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) Color(0xFF1e293b).copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
+                ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp)
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
             ) {
                 Row(
                     modifier = Modifier
@@ -282,9 +468,19 @@ fun CampusMapScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Map View Options", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(
+                        text = "Map View Options", 
+                        fontWeight = FontWeight.Bold, 
+                        fontSize = 13.sp,
+                        color = if (isDarkTheme) Color.White else Color(0xFF0F172A)
+                    )
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (isHeatmapEnabled) "Heatmap" else "Markers", fontSize = 12.sp, modifier = Modifier.padding(end = 8.dp))
+                        Text(
+                            text = if (isHeatmapEnabled) "Heatmap" else "Markers", 
+                            fontSize = 11.sp, 
+                            color = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B),
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
                         Switch(
                             checked = isHeatmapEnabled,
                             onCheckedChange = { isHeatmapEnabled = it }
@@ -293,7 +489,7 @@ fun CampusMapScreen(
                 }
             }
 
-            // Selecable row of filters
+            // Selectable row of filters
             val filterChips = listOf("All", "Emergency", "High Reward", "Newest", "Nearest")
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -303,17 +499,65 @@ fun CampusMapScreen(
                     FilterChip(
                         selected = selectedFilter == chip,
                         onClick = { selectedFilter = chip },
-                        label = { Text(chip) },
+                        label = { Text(chip, fontSize = 12.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                            selectedLabelColor = Color.White,
+                            containerColor = if (isDarkTheme) Color(0xFF1e293b) else Color.White,
+                            labelColor = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = selectedFilter == chip,
+                            borderColor = if (isDarkTheme) Color(0xFF334155) else Color(0xFFE2E8F0)
                         )
                     )
                 }
             }
         }
 
-        // ModalBottomSheet Container logic
+        // Custom Geolocation Recenter FAB (Requested Feature)
+        FloatingActionButton(
+            onClick = {
+                coroutineScope.launch {
+                    userLocation?.let {
+                        cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(it, 16.5f))
+                    } ?: run {
+                        Toast.makeText(context, "Locating current location...", Toast.LENGTH_SHORT).show()
+                        try {
+                            fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+                                loc?.let {
+                                    userLocation = LatLng(it.latitude, it.longitude)
+                                    coroutineScope.launch {
+                                        cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(userLocation!!, 16.5f))
+                                    }
+                                } ?: run {
+                                    Toast.makeText(context, "Location unavailable. Enable GPS.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } catch (e: SecurityException) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 16.dp, end = 16.dp)
+                .size(54.dp)
+                .shadow(elevation = 6.dp, shape = CircleShape),
+            shape = CircleShape,
+            containerColor = if (isDarkTheme) Color(0xFF1e293b) else Color.White,
+            contentColor = MaterialTheme.colorScheme.primary
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_my_location),
+                contentDescription = "Recenter GPS Location",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        // ModalBottomSheet Container logic (High-quality Logistics styling)
         if (showBottomSheet && selectedTask != null) {
             val task = selectedTask!!
             val userLoc = userLocation
@@ -334,41 +578,144 @@ fun CampusMapScreen(
 
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                containerColor = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                containerColor = if (isDarkTheme) Color(0xFF0F172A) else MaterialTheme.colorScheme.background,
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                dragHandle = { BottomSheetDefaults.DragHandle(color = if (isDarkTheme) Color(0xFF334155) else Color(0xFFE2E8F0)) }
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp)
+                        .padding(start = 24.dp, end = 24.dp, bottom = 32.dp)
                 ) {
-                    Text(
-                        text = task.title,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Reward: RM ${String.format("%.2f", task.price)}",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    // Header title & category badges
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = task.title,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = if (isDarkTheme) Color.White else Color(0xFF0F172A),
+                            modifier = Modifier.weight(1f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            if (task.isEmergency) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFFFEE2E2), shape = RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text("🚨 EMERGENCY", color = Color(0xFFEF4444), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(task.category.uppercase(), color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Route details styled like a real logistics app (Impressive UX)
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDarkTheme) Color(0xFF1e293b) else Color(0xFFF8FAFC)
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        border = BorderStroke(1.dp, if (isDarkTheme) Color(0xFF334155) else Color(0xFFE2E8F0))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(Color(0xFF22C55E), shape = CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text("PICKUP", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isDarkTheme) Color(0xFF64748B) else Color(0xFF94A3B8))
+                                    Text(task.pickup, fontSize = 14.sp, color = if (isDarkTheme) Color.White else Color(0xFF0F172A), fontWeight = FontWeight.SemiBold)
+                                }
+                            }
+                            
+                            // Vertical Dotted connector line
+                            Box(
+                                modifier = Modifier
+                                    .padding(start = 4.dp, top = 4.dp, bottom = 4.dp)
+                                    .width(2.dp)
+                                    .height(20.dp)
+                                    .background(if (isDarkTheme) Color(0xFF334155) else Color(0xFFE2E8F0))
+                            )
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(Color(0xFFEF4444), shape = CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text("DROPOFF", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isDarkTheme) Color(0xFF64748B) else Color(0xFF94A3B8))
+                                    Text(task.dropoff, fontSize = 14.sp, color = if (isDarkTheme) Color.White else Color(0xFF0F172A), fontWeight = FontWeight.SemiBold)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Rewards & Distance metrics
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("PAYMENT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isDarkTheme) Color(0xFF64748B) else Color(0xFF94A3B8))
+                            Text(
+                                text = "RM ${String.format("%.2f", task.price)}",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 24.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text("DISTANCE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isDarkTheme) Color(0xFF64748B) else Color(0xFF94A3B8))
+                            Text(
+                                text = distanceStr,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = if (isDarkTheme) Color.White else Color(0xFF0F172A)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Task Description
+                    Text("DESCRIPTION", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isDarkTheme) Color(0xFF64748B) else Color(0xFF94A3B8))
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Distance to Pickup: $distanceStr",
+                        text = task.description.ifEmpty { "No description provided." },
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isDarkTheme) Color(0xFFCBD5E1) else Color(0xFF334155),
+                        lineHeight = 20.sp
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = task.description,
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Action buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -391,8 +738,11 @@ fun CampusMapScreen(
                                 }
                             },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(24.dp)
+                            shape = RoundedCornerShape(24.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                         ) {
+                            Icon(painter = painterResource(id = R.drawable.ic_chat), contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text("Chat")
                         }
 
@@ -409,7 +759,9 @@ fun CampusMapScreen(
                             shape = RoundedCornerShape(24.dp),
                             enabled = task.status == TaskStatus.OPEN
                         ) {
-                            Text("Accept")
+                            Icon(imageVector = Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Accept Task")
                         }
                     }
                 }

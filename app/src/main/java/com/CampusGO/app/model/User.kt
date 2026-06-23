@@ -9,5 +9,6 @@ data class User(
     var email: String = "",
     var rating: Double = 5.0,
     var totalReviews: Int = 0,
+    var profilePicture: String = "",
     var createdAt: Long = 0L
 )
