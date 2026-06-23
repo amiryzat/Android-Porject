@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">CampusGO</string>
+    <string name="app_tagline">Kampus Anda, Tugasan Anda</string>
+
+    <!-- Login -->
+    <string name="welcome_back">Selamat Kembali</string>
+    <string name="sign_in_subtitle">Daftar masuk ke akaun CampusGO anda</string>
+    <string name="hint_email">Alamat e-mel</string>
+    <string name="hint_password">Kata laluan</string>
+    <string name="btn_sign_in">Log Masuk</string>
+    <string name="forgot_password">Lupa kata laluan?</string>
+    <string name="no_account">Belum mempunyai akaun?</string>
+    <string name="sign_up">Daftar</string>
+
+    <!-- Register -->
+    <string name="create_account">Cipta Akaun</string>
+    <string name="register_subtitle">Sertai CampusGO hari ini</string>
+    <string name="hint_full_name">Nama penuh</string>
+    <string name="hint_confirm_password">Sahkan kata laluan</string>
+    <string name="btn_create_account">Daftar Akaun</string>
+    <string name="i_am_a">Saya adalah:</string>
+    <string name="role_student">Pelajar</string>
+    <string name="role_provider">Penyedia Perkhidmatan</string>
+    <string name="have_account">Sudah mempunyai akaun?</string>
+    <string name="sign_in">Log Masuk</string>
+
+    <!-- Home -->
+    <string name="welcome_user">Selamat datang, %1$s!</string>
+    <string name="home_subtitle">Apakah yang ingin anda lakukan hari ini?</string>
+    <string name="btn_logout">Log Keluar</string>
+    <string name="browse_gigs">Cari Tugasan</string>
+    <string name="browse_gigs_desc">Cari tugasan di sekitar kampus dan mula menjana pendapatan</string>
+    <string name="post_gig">Hantar Tugasan</string>
+    <string name="post_gig_desc">Perlukan bantuan? Hantar tugasan untuk diselesaikan oleh runner</string>
+</resources>
