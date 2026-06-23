@@ -121,6 +121,8 @@ class ProfileFragment : Fragment() {
         }
     }
 
+
+
     private fun setupTransactionRecyclerView() {
         transactionAdapter = WalletTransactionAdapter()
         binding.rvTransactions.layoutManager = LinearLayoutManager(requireContext())

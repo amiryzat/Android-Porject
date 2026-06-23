@@ -70,39 +70,96 @@ class TasksFragment : Fragment() {
         loadMyTasks()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        if (::adapter.isInitialized) {
+            loadMyTasks()
+        }
+    }
+
     private fun loadMyTasks() {
         val uid = auth.currentUser?.uid ?: run {
             Log.w("TasksFragment", "loadMyTasks: no current user")
             return
         }
+
         Log.d("TasksFragment", "loadMyTasks: uid=$uid")
-        listener?.let { db.child("tasks").removeEventListener(it) }
+
+        listener?.let {
+            db.child("tasks").removeEventListener(it)
+        }
+
         listener = db.child("tasks").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 Log.d("TasksFragment", "onDataChange: ${snapshot.childrenCount} total tasks")
-                val v = view ?: return  // fragment view destroyed, skip
+
+                val v = view ?: return
                 if (!isAdded) return
+
                 postedTasks.clear()
                 acceptedTasks.clear()
                 completedTasks.clear()
+
                 for (child in snapshot.children) {
-                    val task = child.getValue(Task::class.java) ?: continue
+                    if (child.key == "_placeholder") continue
+
+                    val task = try {
+                        child.getValue(Task::class.java)
+                    } catch (e: Exception) {
+                        Log.e("TasksFragment", "Invalid task data at ${child.key}", e)
+                        null
+                    } ?: continue
+
+                    // Important: if old tasks do not have id inside the object,
+                    // use the Firebase key as the task id.
+                    if (task.id.isBlank()) {
+                        task.id = child.key ?: ""
+                    }
+
+                    val status = task.status.trim().uppercase()
+
+                    Log.d(
+                        "TasksFragment",
+                        "Task check: id=${task.id}, status=$status, posterId=${task.posterId}, runnerId=${task.runnerId}, currentUid=$uid"
+                    )
+
                     when {
-                        task.posterId == uid && task.status != TaskStatus.COMPLETED && task.status != TaskStatus.CANCELLED ->
+                        task.posterId == uid &&
+                                status != TaskStatus.COMPLETED &&
+                                status != TaskStatus.CANCELLED -> {
                             postedTasks.add(0, task)
-                        task.runnerId == uid && (task.status == TaskStatus.ACCEPTED || task.status == TaskStatus.ON_THE_WAY || task.status == TaskStatus.DELIVERED) ->
+                        }
+
+                        task.runnerId == uid &&
+                                (
+                                        status == TaskStatus.ACCEPTED ||
+                                                status == TaskStatus.ON_THE_WAY ||
+                                                status == TaskStatus.DELIVERED
+                                        ) -> {
                             acceptedTasks.add(0, task)
-                        (task.posterId == uid || task.runnerId == uid) && (task.status == TaskStatus.COMPLETED || task.status == TaskStatus.CANCELLED) ->
+                        }
+
+                        (task.posterId == uid || task.runnerId == uid) &&
+                                (
+                                        status == TaskStatus.COMPLETED ||
+                                                status == TaskStatus.CANCELLED
+                                        ) -> {
                             completedTasks.add(0, task)
+                        }
                     }
                 }
-                Log.d("TasksFragment", "parsed: posted=${postedTasks.size} accepted=${acceptedTasks.size} completed=${completedTasks.size}")
-                // Post to next frame: avoids calling notifyDataSetChanged() while
-                // RecyclerView is still in its first layout pass (crash on MIUI/Xiaomi).
+
+                Log.d(
+                    "TasksFragment",
+                    "parsed: posted=${postedTasks.size}, accepted=${acceptedTasks.size}, completed=${completedTasks.size}"
+                )
+
                 v.post {
                     if (isAdded) updateDisplay()
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
                 Log.e("TasksFragment", "DB cancelled: code=${error.code} msg=${error.message}")
             }
