@@ -78,14 +78,8 @@ class ChatListFragment : Fragment() {
                     val chats = mutableListOf<Chat>()
 
                     for (child in snapshot.children) {
-                        if (child.key == "_placeholder") continue
-
-                        val chat = try {
-                            child.getValue(Chat::class.java)
-                        } catch (e: Exception) {
-                            Log.e("ChatListFragment", "Invalid chat data at ${child.key}", e)
-                            null
-                        } ?: continue
+                        if (child.value !is Map<*, *>) continue
+                        val chat = child.getValue(Chat::class.java) ?: continue
 
                         val firebaseChatId = child.key ?: ""
 
