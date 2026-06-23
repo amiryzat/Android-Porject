@@ -78,14 +78,8 @@ class ChatListFragment : Fragment() {
                     val chats = mutableListOf<Chat>()
 
                     for (child in snapshot.children) {
-                        if (child.key == "_placeholder") continue
-
-                        val chat = try {
-                            child.getValue(Chat::class.java)
-                        } catch (e: Exception) {
-                            Log.e("ChatListFragment", "Invalid chat data at ${child.key}", e)
-                            null
-                        } ?: continue
+                        if (child.value !is Map<*, *>) continue
+                        val chat = child.getValue(Chat::class.java) ?: continue
 
                         val firebaseChatId = child.key ?: ""
 
@@ -134,12 +128,13 @@ class ChatListFragment : Fragment() {
     private fun openChat(chat: Chat) {
         if (!isAdded) return
 
-        if (chat.id.isEmpty()) {
-            Toast.makeText(
-                requireContext(),
-                "Chat ID missing",
-                Toast.LENGTH_SHORT
-            ).show()
+        if (chat.id.isBlank()) {
+            Toast.makeText(requireContext(), "Chat ID missing", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (chat.taskId.isBlank()) {
+            Toast.makeText(requireContext(), "Chat has no linked task", Toast.LENGTH_SHORT).show()
             return
         }
 

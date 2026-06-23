@@ -1,5 +1,6 @@
 package com.CampusGO.app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -32,6 +33,14 @@ class MainActivity : AppCompatActivity() {
             }
             loadFragment(fragment)
             true
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val tabId = intent.getIntExtra("openTab", -1)
+        if (tabId != -1) {
+            binding.bottomNav.selectedItemId = tabId
         }
     }
 

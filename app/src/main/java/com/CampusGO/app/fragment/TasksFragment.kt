@@ -103,6 +103,7 @@ class TasksFragment : Fragment() {
 
                 for (child in snapshot.children) {
                     if (child.key == "_placeholder") continue
+                    if (child.value !is Map<*, *>) continue
 
                     val task = try {
                         child.getValue(Task::class.java)
@@ -123,7 +124,6 @@ class TasksFragment : Fragment() {
                         "TasksFragment",
                         "Task check: id=${task.id}, status=$status, posterId=${task.posterId}, runnerId=${task.runnerId}, currentUid=$uid"
                     )
-
                     when {
                         task.posterId == uid &&
                                 status != TaskStatus.COMPLETED &&

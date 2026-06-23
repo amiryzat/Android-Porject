@@ -60,6 +60,24 @@
             android:name=".TaskTrackingActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".WalletTopUpActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".WalletPaymentProcessingActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".WalletCashOutActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".WalletCashOutSuccessActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

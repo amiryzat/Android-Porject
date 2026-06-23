@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="@color/campusgo_background">
+
+    <!-- Large tick badge -->
+    <TextView
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:text="✓"
+        android:textSize="42sp"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:background="@drawable/bg_success_circle"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cash Out Successful"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/campusgo_text_primary"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvSuccessAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RM 0.00"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:textColor="@color/campusgo_primary"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="has been transferred to your bank account."
+        android:textSize="14sp"
+        android:textColor="@color/campusgo_text_secondary"
+        android:gravity="center"
+        android:layout_marginBottom="28dp" />
+
+    <!-- Details card -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="36dp"
+        app:cardBackgroundColor="@color/campusgo_background"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/campusgo_divider"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Bank"
+                    android:textSize="13sp"
+                    android:textColor="@color/campusgo_text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvBankName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="—"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/campusgo_text_primary"
+                    android:gravity="end" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/campusgo_divider"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Account"
+                    android:textSize="13sp"
+                    android:textColor="@color/campusgo_text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvAccountMasked"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="****0000"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/campusgo_text_primary"
+                    android:gravity="end" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnReturn"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="Return to Profile"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/campusgo_primary"
+        app:cornerRadius="12dp" />
+
+</LinearLayout>
