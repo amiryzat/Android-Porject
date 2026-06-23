@@ -280,7 +280,16 @@ class ConfirmAcceptActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 updateAcceptedTaskCount(runnerId)
 
-                // CHANGE:
+                // Save to accepted_tasks collection
+                val acceptedTask = mapOf(
+                    "taskId" to task.id,
+                    "runnerId" to runnerId,
+                    "runnerName" to runnerName,
+                    "acceptedAt" to System.currentTimeMillis(),
+                    "price" to finalPrice
+                )
+                db.child("accepted_tasks").child(task.id).setValue(acceptedTask)
+
                 // Make sure the chat exists after task is accepted.
                 // This helps TaskTrackingActivity open the same chat later.
                 val chatId = chatIdFromIntent ?: ChatIdHelper.buildChatId(

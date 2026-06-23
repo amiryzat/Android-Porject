@@ -23,10 +23,21 @@ data class Task(
     var runnerName: String = "",
     var agreedPrice: Double = 0.0,
     var createdAt: Long = 0L,
+    var pickupLatitude: Double = 0.0,
+    var pickupLongitude: Double = 0.0,
+    var dropoffLatitude: Double = 0.0,
+    var dropoffLongitude: Double = 0.0,
+    var priority: String = TaskPriority.MEDIUM,
     var paymentStatus: String = PaymentStatus.UNPAID,
     var paymentTransferredAt: Long = 0L,
     var paymentAmount: Double = 0.0
 )
+
+object TaskPriority {
+    const val LOW = "LOW"
+    const val MEDIUM = "MEDIUM"
+    const val HIGH = "HIGH"
+}
 
 object TaskStatus {
     const val OPEN = "OPEN"

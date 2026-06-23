@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import com.CampusGO.app.databinding.ActivityMainBinding
 import com.CampusGO.app.fragment.ChatListFragment
 import com.CampusGO.app.fragment.FeedFragment
+import com.CampusGO.app.fragment.MapFragment
 import com.CampusGO.app.fragment.ProfileFragment
 import com.CampusGO.app.fragment.TasksFragment
 
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
             val fragment: Fragment = when (item.itemId) {
                 R.id.nav_feed -> FeedFragment()
                 R.id.nav_tasks -> TasksFragment()
+                R.id.nav_map -> MapFragment()
                 R.id.nav_chat -> ChatListFragment()
                 R.id.nav_profile -> ProfileFragment()
                 else -> FeedFragment()
