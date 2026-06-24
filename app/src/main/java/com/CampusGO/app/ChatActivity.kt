@@ -22,6 +22,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -110,6 +111,7 @@ class ChatActivity : AppCompatActivity() {
 
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.llHeader.applyStatusBarInsets()
 
         taskId = intent.getStringExtra("taskId") ?: run {
             Toast.makeText(this, "Missing task ID", Toast.LENGTH_SHORT).show()

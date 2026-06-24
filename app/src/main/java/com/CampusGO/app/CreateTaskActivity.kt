@@ -13,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContracts
 import com.CampusGO.app.model.TaskPriority
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.CampusGO.app.service.MapService
 
 class CreateTaskActivity : AppCompatActivity() {
@@ -76,6 +77,7 @@ class CreateTaskActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateTaskBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.llHeader.applyStatusBarInsets()
 
         binding.btnBack.setOnClickListener { finish() }
 

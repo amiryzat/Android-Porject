@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityWalletPaymentProcessingBinding
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.CampusGO.app.model.WalletTransaction
 import com.CampusGO.app.model.WalletTransactionStatus
 import com.CampusGO.app.model.WalletTransactionType
@@ -31,6 +32,7 @@ class WalletPaymentProcessingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityWalletPaymentProcessingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.llHeader.applyStatusBarInsets()
 
         amount = intent.getDoubleExtra("amount", 0.0)
         paymentMethod = intent.getStringExtra("paymentMethod") ?: "ONLINE_BANKING"

@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.google.firebase.database.ValueEventListener
 
 class ProfileFragment : Fragment() {
@@ -53,6 +54,8 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.scrollViewProfile.applyStatusBarInsets()
 
         val authUser = auth.currentUser ?: return
         val uid = authUser.uid

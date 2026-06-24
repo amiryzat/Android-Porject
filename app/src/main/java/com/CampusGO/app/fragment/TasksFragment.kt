@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.google.firebase.database.ValueEventListener
 
 class TasksFragment : Fragment() {
@@ -47,6 +48,8 @@ class TasksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("TasksFragment", "onViewCreated")
+
+        view.findViewById<View>(R.id.llHeader).applyStatusBarInsets()
 
         rvMyTasks = view.findViewById(R.id.rvMyTasks)
         tvStats = view.findViewById(R.id.tvStats)

@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.CampusGO.app.databinding.ActivityWalletTopUpBinding
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.CampusGO.app.model.Wallet
 import com.CampusGO.app.util.handleKeyboardInsets
 import com.google.firebase.auth.FirebaseAuth
@@ -41,6 +42,7 @@ class WalletTopUpActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         returnTo = intent.getStringExtra("returnTo") ?: "PROFILE"
+        binding.llHeader.applyStatusBarInsets()
 
         handleKeyboardInsets(binding.scrollView)
         setupBankPicker()

@@ -18,6 +18,7 @@ import com.CampusGO.app.model.Wallet
 import com.CampusGO.app.model.WalletTransactionStatus
 import com.CampusGO.app.model.WalletTransactionType
 import com.CampusGO.app.util.ChatIdHelper
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -58,6 +59,7 @@ class TaskTrackingActivity : AppCompatActivity() {
 
         binding = ActivityTaskTrackingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.llHeader.applyStatusBarInsets()
 
         val taskId = intent.getStringExtra("taskId") ?: run { finish(); return }
 

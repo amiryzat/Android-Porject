@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.CampusGO.app.databinding.ActivityManageProfileBinding
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.CampusGO.app.model.User
 import com.CampusGO.app.utils.AvatarHelper
 import com.google.firebase.auth.FirebaseAuth
@@ -71,6 +72,7 @@ class ManageProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityManageProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.toolbar.applyStatusBarInsets()
 
         // Set up toolbar
         binding.btnBack.setOnClickListener { finish() }

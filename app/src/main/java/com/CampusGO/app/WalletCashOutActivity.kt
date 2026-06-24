@@ -9,6 +9,7 @@ import com.CampusGO.app.model.Wallet
 import com.CampusGO.app.model.WalletTransaction
 import com.CampusGO.app.model.WalletTransactionStatus
 import com.CampusGO.app.model.WalletTransactionType
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.CampusGO.app.util.handleKeyboardInsets
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -30,6 +31,7 @@ class WalletCashOutActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityWalletCashOutBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.llHeader.applyStatusBarInsets()
 
         handleKeyboardInsets(binding.scrollView)
         setupBankPicker()

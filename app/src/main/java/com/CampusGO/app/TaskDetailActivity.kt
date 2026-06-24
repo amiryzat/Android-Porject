@@ -11,6 +11,7 @@ import com.CampusGO.app.databinding.ActivityTaskDetailBinding
 import com.CampusGO.app.model.Task
 import com.CampusGO.app.model.TaskStatus
 import com.CampusGO.app.util.ChatIdHelper // CHANGE: Added ChatIdHelper import
+import com.CampusGO.app.util.applyStatusBarInsets
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -48,6 +49,7 @@ class TaskDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityTaskDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.llHeader.applyStatusBarInsets()
 
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.setOnTouchListener { _, event ->

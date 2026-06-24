@@ -208,6 +208,7 @@ class LocationPickerActivity : AppCompatActivity() {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .padding(16.dp)
                     .align(Alignment.TopCenter)
             ) {
