@@ -35,6 +35,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.CampusGO.app.model.TaskCategory
+import com.CampusGO.app.util.applyStatusBarInsets
 
 class FeedFragment : Fragment() {
 
@@ -83,6 +84,8 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        view.findViewById<View>(R.id.llHeader).applyStatusBarInsets()
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 

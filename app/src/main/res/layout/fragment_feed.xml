@@ -12,29 +12,22 @@
         app:elevation="0dp">
 
         <LinearLayout
+            android:id="@+id/llHeader"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
             android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
             android:gravity="center_vertical">
 
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="36dp"
-                android:src="@drawable/ic_logo_512"
-                android:scaleType="fitStart"
-                android:contentDescription="CampusGO" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CampusGO"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textColor="@color/campusgo_text_primary" />
 
-            <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
-
-            <ImageView
-                android:id="@+id/ivNotification"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:padding="8dp"
-                android:src="@drawable/ic_chat"
-                android:contentDescription="Notifications"
-                android:background="?attr/selectableItemBackgroundBorderless" />
         </LinearLayout>
 
         <View
@@ -46,7 +39,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
-            android:paddingVertical="8dp">
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupFilters"
